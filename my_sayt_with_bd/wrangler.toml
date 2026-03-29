@@ -1,4 +1,4 @@
-name = "demo-proj"
+name = "my_sayt_with_bd"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
