@@ -1,5 +1,4 @@
-//worker.js - Cloudflare Worker с API для работы с БД
-
+// worker.js — упрощённая версия для отладки
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -8,6 +7,7 @@ const corsHeaders = {
 
 export default {
   async fetch(request, env) {
+    // Обработка OPTIONS (CORS)
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
@@ -15,31 +15,45 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // GET /api/employees - получить всех сотрудников
+    console.log(`📨 Request: ${request.method} ${path}`);
+
+    // ПРОВЕРКА: просто вернуть список сотрудников (мок-данные)
     if (path === '/api/employees' && request.method === 'GET') {
+      // Проверяем, есть ли доступ к D1
+      if (!env.DB) {
+        console.error('❌ DB binding is not available!');
+        return new Response(JSON.stringify({ 
+          error: 'Database not configured',
+          message: 'D1 binding "DB" is missing'
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
       try {
-        const departmentId = url.searchParams.get('department_id');
-        const search = url.searchParams.get('search');
-        
-        let query = `
-          SELECT e.*, d.name as department_name 
-          FROM employees e
-          LEFT JOIN departments d ON e.department_id = d.id
-        `;
-        const params = [];
-        
-        if (departmentId) {
-          query += ' WHERE e.department_id = ?';
-          params.push(departmentId);
-        } else if (search) {
-          query += ' WHERE e.first_name LIKE ? OR e.last_name LIKE ? OR e.email LIKE ?';
-          const like = `%${search}%`;
-          params.push(like, like, like);
-        }
-        
-        query += ' ORDER BY e.last_name, e.first_name';
-        
-        const { results } = await env.DB.prepare(query).bind(...params).all();
+        // Пытаемся получить данные из D1
+        const { results } = await env.DB.prepare('SELECT * FROM employees LIMIT 10').all();
+        console.log(`✅ Found ${results.length} employees`);
+        return new Response(JSON.stringify(results), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      } catch (error) {
+        console.error('❌ Database error:', error.message);
+        return new Response(JSON.stringify({ 
+          error: 'Database query failed',
+          details: error.message 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+    }
+
+    // Получить отделы
+    if (path === '/api/departments' && request.method === 'GET') {
+      try {
+        const { results } = await env.DB.prepare('SELECT * FROM departments').all();
         return new Response(JSON.stringify(results), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
@@ -51,77 +65,29 @@ export default {
       }
     }
 
-    // GET /api/employees/:id - получить одного сотрудника
-    if (path.match(/^\/api\/employees\/\d+$/) && request.method === 'GET') {
-      const id = path.split('/').pop();
-      const employee = await env.DB.prepare(
-        'SELECT e.*, d.name as department_name FROM employees e LEFT JOIN departments d ON e.department_id = d.id WHERE e.id = ?'
-      ).bind(id).first();
-      
-      if (!employee) {
-        return new Response(JSON.stringify({ error: 'Employee not found' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    // Тестовый эндпоинт для проверки
+    if (path === '/api/test' && request.method === 'GET') {
+      return new Response(JSON.stringify({ 
+        status: 'ok', 
+        message: 'Worker is running',
+        dbAvailable: !!env.DB
+      }), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // Если ничего не подошло — отдать index.html
+    if (request.method === 'GET') {
+      try {
+        const html = await fetch('https://my_sayt_with_bd.pages.dev/index.html');
+        return html;
+      } catch {
+        return new Response('Hello from Worker!', { 
+          headers: { 'Content-Type': 'text/plain' }
         });
       }
-      
-      return new Response(JSON.stringify(employee), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
     }
 
-    // POST /api/employees - добавить сотрудника
-    if (path === '/api/employees' && request.method === 'POST') {
-      const body = await request.json();
-      
-      const result = await env.DB.prepare(
-        'INSERT INTO employees (first_name, last_name, email, phone, department_id, hire_date) VALUES (?, ?, ?, ?, ?, ?)'
-      ).bind(
-        body.first_name, body.last_name, body.email, body.phone, body.department_id, body.hire_date
-      ).run();
-      
-      return new Response(JSON.stringify({ id: result.meta.last_row_id }), {
-        status: 201,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-
-    // PUT /api/employees/:id - обновить сотрудника
-    if (path.match(/^\/api\/employees\/\d+$/) && request.method === 'PUT') {
-      const id = path.split('/').pop();
-      const body = await request.json();
-      
-      await env.DB.prepare(
-        'UPDATE employees SET first_name = ?, last_name = ?, email = ?, phone = ?, department_id = ?, hire_date = ? WHERE id = ?'
-      ).bind(
-        body.first_name, body.last_name, body.email, body.phone, body.department_id, body.hire_date, id
-      ).run();
-      
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-
-    // DELETE /api/employees/:id - удалить сотрудника
-    if (path.match(/^\/api\/employees\/\d+$/) && request.method === 'DELETE') {
-      const id = path.split('/').pop();
-      
-      await env.DB.prepare('DELETE FROM employees WHERE id = ?').bind(id).run();
-      
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-
-    // GET /api/departments - получить отделы
-    if (path === '/api/departments' && request.method === 'GET') {
-      const { results } = await env.DB.prepare('SELECT * FROM departments ORDER BY name').all();
-      return new Response(JSON.stringify(results), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-
-    // 404 для неизвестных API маршрутов
     return new Response(JSON.stringify({ error: 'Not found' }), {
       status: 404,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
