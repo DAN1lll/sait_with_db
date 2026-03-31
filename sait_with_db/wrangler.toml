@@ -3,6 +3,6 @@ main = "worker.js"
 compatibility_date = "2026-03-31"
 
 [[d1_databases]]
-binding = "DB"
+binding = "BD"
 database_name = "staff-db"
 database_id = "2a08b610-cd8d-4ffc-882b-e186024c6dd0"
