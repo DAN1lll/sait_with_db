@@ -1,6 +1,6 @@
 name = "demo-proj"
 main = "worker.js"
-compatibility_date = "2025-03-31"
+compatibility_date = "2026-04-01"
 
 [[d1_databases]]
 binding = "DB"
