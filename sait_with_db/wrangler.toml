@@ -1,6 +1,6 @@
 name = "demo-proj"
 main = "worker.js"
-compatibility_date = "2026-04-02"
+compatibility_date = "Sep 27, 2025"
 
 # Статические активы
 [assets]
