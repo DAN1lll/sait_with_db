@@ -1,4 +1,14 @@
 name = "demo-proj"
 main = "worker.js"
-compatibility_date = "2026-03-31"
+compatibility_date = "2026-04-02"
 
+# Статические активы
+[assets]
+directory = "sait_with_db"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# KV хранилище
+[[kv_namespaces]]
+binding = "STAFF_KV"
+id = "ID_ВАШЕГО_KV"  # замените на реальный ID
