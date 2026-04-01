@@ -8,7 +8,8 @@ directory = "sait_with_db"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 
-# KV хранилище
-[[kv_namespaces]]
-binding = "STAFF_KV"
-id = "ID_ВАШЕГО_KV"  # замените на реальный ID
+# D1 база данных
+[[d1_databases]]
+binding = "DB"
+database_name = "staff-db"
+database_id = "2a08b610-cd8d-4ffc-882b-e186024c6dd0"
