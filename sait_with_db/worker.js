@@ -13,65 +13,28 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
     
+    // Проверка D1 биндинга
+    if (!env.DB) {
+      return new Response(JSON.stringify({
+        error: 'D1 binding "DB" not configured',
+        fix: 'Add [[d1_databases]] to wrangler.toml'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+    
     // ========== API ENDPOINTS ==========
     
-    // Проверка KV
+    // GET /api/test — проверка D1
     if (path === '/api/test') {
-      if (!env.STAFF_KV) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'KV binding not configured',
-          availableBindings: Object.keys(env)
-        }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
-      }
-      
-      const data = await loadData(env);
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'KV is working!',
-        kvExists: true,
-        departmentsCount: data.departments.length,
-        employeesCount: data.employees.length
-      }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-    
-    // GET /api/departments
-    if (path === '/api/departments') {
-      const data = await loadData(env);
-      return new Response(JSON.stringify(data.departments), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-    
-    // GET /api/employees
-    if (path === '/api/employees') {
-      const data = await loadData(env);
-      const employeesWithDept = data.employees.map(emp => ({
-        ...emp,
-        department_name: data.departments.find(d => d.id === emp.department_id)?.name || ''
-      }));
-      return new Response(JSON.stringify(employeesWithDept), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-    
-    // POST /api/employees
-    if (path === '/api/employees' && request.method === 'POST') {
       try {
-        const data = await loadData(env);
-        const body = await request.json();
-        const newId = data.nextId;
-        const newEmployee = { id: newId, ...body };
-        data.employees.push(newEmployee);
-        data.nextId = newId + 1;
-        await saveData(env, data);
-        
-        return new Response(JSON.stringify({ success: true, id: newId }), {
-          status: 201,
+        const { results } = await env.DB.prepare('SELECT 1 as test').all();
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'D1 database is working!',
+          test: results
+        }), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       } catch (error) {
@@ -82,15 +45,89 @@ export default {
       }
     }
     
-    // DELETE /api/employees/:id
-    const idMatch = path.match(/^\/api\/employees\/(\d+)$/);
-    if (idMatch && request.method === 'DELETE') {
+    // GET /api/departments
+    if (path === '/api/departments') {
       try {
-        const id = parseInt(idMatch[1]);
-        const data = await loadData(env);
-        data.employees = data.employees.filter(e => e.id !== id);
-        await saveData(env, data);
-        return new Response(JSON.stringify({ success: true }), {
+        const { results } = await env.DB.prepare(
+          'SELECT * FROM departments ORDER BY name'
+        ).all();
+        return new Response(JSON.stringify(results), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+    }
+    
+    // GET /api/employees
+    if (path === '/api/employees') {
+      try {
+        const { results } = await env.DB.prepare(
+          `SELECT e.*, d.name as department_name 
+           FROM employees e 
+           LEFT JOIN departments d ON e.department_id = d.id 
+           ORDER BY e.last_name`
+        ).all();
+        return new Response(JSON.stringify(results), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+    }
+    
+    // GET /api/employees/:id
+    const idMatch = path.match(/^\/api\/employees\/(\d+)$/);
+    if (idMatch && request.method === 'GET') {
+      const id = idMatch[1];
+      try {
+        const employee = await env.DB.prepare(
+          `SELECT e.*, d.name as department_name 
+           FROM employees e 
+           LEFT JOIN departments d ON e.department_id = d.id 
+           WHERE e.id = ?`
+        ).bind(id).first();
+        
+        if (!employee) {
+          return new Response(JSON.stringify({ error: 'Employee not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
+        return new Response(JSON.stringify(employee), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+    }
+    
+    // POST /api/employees
+    if (path === '/api/employees' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const result = await env.DB.prepare(
+          `INSERT INTO employees (first_name, last_name, email, phone, department_id, hire_date) 
+           VALUES (?, ?, ?, ?, ?, ?)`
+        ).bind(
+          body.first_name, body.last_name, body.email, body.phone, 
+          body.department_id, body.hire_date
+        ).run();
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          id: result.meta.last_row_id 
+        }), {
+          status: 201,
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       } catch (error) {
@@ -103,20 +140,35 @@ export default {
     
     // PUT /api/employees/:id
     if (idMatch && request.method === 'PUT') {
+      const id = idMatch[1];
       try {
-        const id = parseInt(idMatch[1]);
-        const data = await loadData(env);
         const body = await request.json();
-        const index = data.employees.findIndex(e => e.id === id);
-        if (index !== -1) {
-          data.employees[index] = { ...data.employees[index], ...body };
-          await saveData(env, data);
-          return new Response(JSON.stringify({ success: true }), {
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-          });
-        }
-        return new Response(JSON.stringify({ error: 'Employee not found' }), {
-          status: 404,
+        await env.DB.prepare(
+          `UPDATE employees 
+           SET first_name = ?, last_name = ?, email = ?, phone = ?, department_id = ?, hire_date = ? 
+           WHERE id = ?`
+        ).bind(
+          body.first_name, body.last_name, body.email, body.phone, 
+          body.department_id, body.hire_date, id
+        ).run();
+        
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+    }
+    
+    // DELETE /api/employees/:id
+    if (idMatch && request.method === 'DELETE') {
+      const id = idMatch[1];
+      try {
+        await env.DB.prepare('DELETE FROM employees WHERE id = ?').bind(id).run();
+        return new Response(JSON.stringify({ success: true }), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       } catch (error) {
@@ -128,34 +180,7 @@ export default {
     }
     
     // ========== СТАТИКА ==========
-    // Для всех остальных запросов — отдаём статику через ASSETS
+    // Все остальные запросы — отдаём статику через Assets
     return env.ASSETS.fetch(request);
   }
 };
-
-// Функции работы с KV
-async function loadData(env) {
-  let data = await env.STAFF_KV.get('data', 'json');
-  if (!data) {
-    // Инициализация тестовыми данными
-    data = {
-      departments: [
-        { id: 1, name: 'Разработка' },
-        { id: 2, name: 'Дизайн' },
-        { id: 3, name: 'Маркетинг' }
-      ],
-      employees: [
-        { id: 1, first_name: 'Иван', last_name: 'Петров', email: 'ivan@company.com', phone: '+7 (999) 123-45-67', department_id: 1, hire_date: '2023-01-15' },
-        { id: 2, first_name: 'Мария', last_name: 'Сидорова', email: 'maria@company.com', phone: '+7 (999) 234-56-78', department_id: 2, hire_date: '2023-02-20' },
-        { id: 3, first_name: 'Алексей', last_name: 'Иванов', email: 'alex@company.com', phone: '+7 (999) 345-67-89', department_id: 1, hire_date: '2023-03-10' }
-      ],
-      nextId: 4
-    };
-    await env.STAFF_KV.put('data', JSON.stringify(data));
-  }
-  return data;
-}
-
-async function saveData(env, data) {
-  await env.STAFF_KV.put('data', JSON.stringify(data));
-}
