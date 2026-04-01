@@ -1,15 +1,13 @@
 name = "demo-proj"
 main = "worker.js"
-compatibility_date = "Sep 27, 2025"
+compatibility_date = "2026-04-02"
 
-# Статические активы
-[assets]
-directory = "sait_with_db"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
-
-# D1 база данных
+# Добавьте это!
 [[d1_databases]]
 binding = "DB"
 database_name = "staff-db"
 database_id = "2a08b610-cd8d-4ffc-882b-e186024c6dd0"
+
+# Статика (если есть)
+[assets]
+directory = "sait_with_db"
