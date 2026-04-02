@@ -581,13 +581,13 @@
 
             <div class="status-bar">
                 <div class="status-item">
-                    <span>🚚</span> Система отслеживания
+                    <span></span> Система отслеживания
                 </div>
                 <div class="status-item">
-                    <span>⚡</span> 24/7 мониторинг
+                    <span></span> 24/7 мониторинг
                 </div>
                 <div class="status-item">
-                    <span>🌍</span> Глобальная сеть
+                    <span></span> Глобальная сеть
                 </div>
                 <div class="status-badge badge-online" id="apiStatus">
                     <span class="dot"></span> API активен
@@ -618,12 +618,12 @@
 
         // Status mapping
         const STATUS_CONFIG = {
-            delivered: { name: 'Доставлено', icon: '🏠', chipClass: 'chip-delivered' },
-            in_transit: { name: 'В пути', icon: '🚚', chipClass: 'chip-transit' },
-            out_for_delivery: { name: 'Доставляется', icon: '🚲', chipClass: 'chip-transit' },
-            sorting: { name: 'На сортировке', icon: '📦', chipClass: 'chip-sorting' },
-            registered: { name: 'Зарегистрировано', icon: '📝', chipClass: 'chip-registered' },
-            arrived: { name: 'Прибыло', icon: '🏢', chipClass: 'chip-transit' }
+            delivered: { name: 'Доставлено', chipClass: 'chip-delivered' },
+            in_transit: { name: 'В пути', chipClass: 'chip-transit' },
+            out_for_delivery: { name: 'Доставляется', chipClass: 'chip-transit' },
+            sorting: { name: 'На сортировке', chipClass: 'chip-sorting' },
+            registered: { name: 'Зарегистрировано', chipClass: 'chip-registered' },
+            arrived: { name: 'Прибыло', chipClass: 'chip-transit' }
         };
 
         const TYPE_CONFIG = {
@@ -730,7 +730,7 @@
                                     <div class="stat-value">${getTypeName(data.shipment.type)}</div>
                                 </div>
                                 <div class="stat-card">
-                                    <div class="stat-label">⚖️ Вес</div>
+                                    <div class="stat-label">Вес</div>
                                     <div class="stat-value">${data.shipment.weight_kg} кг</div>
                                 </div>
                                 <div class="stat-card">
