@@ -1,11 +1,11 @@
 // POSTAL TRACKING SYSTEM
-// Version 2.0
+// Version 1.0
 
-// Configuration
 const CONFIG = {
     API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev',
     DEFAULT_TRACKING: 'TRK001'
 };
+
 const STATUS_MAP = {
     'registered': { name: 'Зарегистрировано', class: 'chip-registered' },
     'accepted': { name: 'Принято', class: 'chip-registered' },
@@ -30,12 +30,8 @@ let DOM = {};
 
 function escapeHtml(str) {
     if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function formatDate(dateStr) {
@@ -44,15 +40,10 @@ function formatDate(dateStr) {
         const date = new Date(dateStr);
         if (isNaN(date.getTime())) return dateStr;
         return date.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
-    } catch {
-        return dateStr;
-    }
+    } catch { return dateStr; }
 }
 
 function getStatusInfo(status) {
@@ -63,7 +54,6 @@ function getTypeName(type) {
     return TYPE_MAP[type] || type || '—';
 }
 
-// UI Functions
 function showLoading() {
     if (!DOM.resultContainer) return;
     DOM.resultContainer.innerHTML = `
@@ -176,7 +166,6 @@ async function trackShipment() {
 }
 
 
-
 (function() {
     let clickCount = 0;
     let easterEggShown = false;
@@ -209,7 +198,6 @@ async function trackShipment() {
         }, 5000);
     }
     
-    // Ждём загрузки страницы
     document.addEventListener('DOMContentLoaded', function() {
         const logo = document.querySelector('.logo');
         if (logo) {
@@ -231,10 +219,6 @@ async function trackShipment() {
 console.log('%c by Назаров Даниил from ИСП224/1 ', 
     'background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 12px;'
 );
-// Console message
-console.log('%c by Назаров Даниил from ИСП224/1 ', 
-    'background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 12px;'
-);
 
 // Initialization
 function init() {
@@ -245,9 +229,7 @@ function init() {
         apiStatus: document.getElementById('apiStatus')
     };
     
-    if (DOM.trackBtn) {
-        DOM.trackBtn.addEventListener('click', trackShipment);
-    }
+    if (DOM.trackBtn) DOM.trackBtn.addEventListener('click', trackShipment);
     if (DOM.trackingInput) {
         DOM.trackingInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') trackShipment();
@@ -266,7 +248,6 @@ function init() {
     trackShipment();
 }
 
-// Start
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
