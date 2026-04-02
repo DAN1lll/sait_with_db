@@ -3,214 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Почтовая система</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f0f2f5;
-            padding: 40px 20px;
-        }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        h1 { color: #1a1a2e; margin-bottom: 8px; }
-        .track-form {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        input, button {
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        input { flex: 1; min-width: 200px; }
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background: #2563eb; }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .status-delivered { background: #22c55e; color: white; }
-        .status-in_transit { background: #f59e0b; color: white; }
-        .status-sorting { background: #8b5cf6; color: white; }
-        .status-registered { background: #6b7280; color: white; }
-        .timeline {
-            margin-top: 24px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
-        }
-        .timeline-item {
-            border-left: 2px solid #e2e8f0;
-            padding: 12px 0 12px 20px;
-            margin-left: 12px;
-        }
-        .timeline-date { font-size: 12px; color: #64748b; }
-        .timeline-status { font-weight: 600; margin: 4px 0; }
-        .timeline-location { font-size: 14px; color: #475569; }
-        .error { color: #dc2626; background: #fee2e2; padding: 12px; border-radius: 8px; }
-        .loading { color: #3b82f6; text-align: center; padding: 20px; }
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #64748b;
-            font-size: 12px;
-        }
-    </style>
+    <meta name="description" content="Отслеживание почтовых отправлений. Введите трек-номер и получите полную информацию о местонахождении посылки.">
+    <meta name="keywords" content="отслеживание посылок, почта, трек-номер, доставка">
+    <meta name="author" content="Postal Track">
+    <meta name="theme-color" content="#667eea">
+    
+    <title>Postal Track | Отслеживание посылок</title>
+    
+    <!-- Favicon (base64 для простоты) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' text-anchor='middle' dy='.35em' font-size='60' fill='%23667eea'>📮</text></svg>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Анимированные фоновые элементы -->
+    <div class="bg-circle circle1"></div>
+    <div class="bg-circle circle2"></div>
+    <div class="bg-circle circle3"></div>
+
     <div class="container">
         <div class="card">
-            <h1>📮 Отслеживание посылок</h1>
-            <p>Введите трек-номер для отслеживания</p>
-            
-            <div class="track-form">
-                <input type="text" id="tracking" placeholder="Трек-номер (TRK001...)" value="TRK001">
-                <button onclick="trackShipment()">Отследить</button>
-            </div>
-        </div>
-        
-        <div id="result" style="display: none;"></div>
-        
-        <footer>
-            🔒 Все данные передаются по защищённому каналу<br>
-            &copy; 2024 Почтовая система
-        </footer>
-    </div>
-    
-    <script>
-        // ============================================
-        // API URL — НИКАКИХ СЕКРЕТОВ ЗДЕСЬ!
-        // Только публичный URL API Worker
-        // ============================================
-        const API_URL = 'https://crimson-mountain-ad6e.block-cot.workers.dev';
-        
-        async function trackShipment() {
-            const tracking = document.getElementById('tracking').value.trim().toUpperCase();
-            if (!tracking) {
-                alert('Введите трек-номер');
-                return;
-            }
-            
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = '<div class="loading">🔍 Поиск посылки...</div>';
-            
-            try {
-                // Единственный API вызов — без ключей, без секретов
-                const response = await fetch(`${API_URL}/api/postal/track/${tracking}`);
-                const data = await response.json();
-                
-                if (!response.ok || data.error) {
-                    resultDiv.innerHTML = `<div class="card error">❌ ${data.error || 'Посылка не найдена'}</div>`;
-                    return;
-                }
-                
-                renderResult(data);
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="card error">❌ Ошибка соединения: ${error.message}</div>`;
-            }
-        }
-        
-        function renderResult(data) {
-            const statusClass = getStatusClass(data.currentStatus?.status);
-            const statusName = getStatusName(data.currentStatus?.status);
-            
-            const html = `
-                <div class="card">
-                    <h2>📦 ${data.shipment.tracking_number}</h2>
-                    <p><strong>Получатель:</strong> ${escapeHtml(data.shipment.recipient_name)}</p>
-                    <p><strong>Тип:</strong> ${data.shipment.type} | <strong>Вес:</strong> ${data.shipment.weight_kg} кг</p>
-                    
-                    <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 12px;">
-                        <span class="status-badge ${statusClass}">${statusName}</span>
-                        <p style="margin-top: 8px;"><strong>📍 Текущее местоположение:</strong> ${data.currentStatus?.location_index || 'неизвестно'}</p>
-                        <p><strong>🕐 Последнее обновление:</strong> ${formatDate(data.currentStatus?.status_date)}</p>
-                    </div>
-                    
-                    <div class="timeline">
-                        <h3>📜 История перемещений</h3>
-                        ${data.history.map(h => `
-                            <div class="timeline-item">
-                                <div class="timeline-date">${formatDate(h.status_date)}</div>
-                                <div class="timeline-status">${getStatusName(h.status)}</div>
-                                <div class="timeline-location">📍 Отделение: ${h.location_index}</div>
-                                ${h.notes ? `<div class="timeline-location">📝 ${escapeHtml(h.notes)}</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">
+                    <span class="logo-icon">📮</span>
+                    <span class="logo-text">POSTAL TRACK</span>
                 </div>
-            `;
-            
-            document.getElementById('result').innerHTML = html;
-        }
-        
-        // Вспомогательные функции
-        function getStatusClass(status) {
-            const map = {
-                'delivered': 'status-delivered',
-                'in_transit': 'status-in_transit',
-                'sorting': 'status-sorting',
-                'out_for_delivery': 'status-in_transit',
-                'registered': 'status-registered',
-                'arrived': 'status-in_transit'
-            };
-            return map[status] || 'status-registered';
-        }
-        
-        function getStatusName(status) {
-            const map = {
-                'registered': '📝 Зарегистрировано',
-                'accepted': '✅ Принято',
-                'in_transit': '🚚 В пути',
-                'sorting': '📦 На сортировке',
-                'arrived': '🏢 Прибыло',
-                'out_for_delivery': '🚲 Доставляется',
-                'delivered': '🏠 Доставлено',
-                'failed_delivery': '⚠️ Неудачная доставка',
-                'returned': '🔄 Возвращено'
-            };
-            return map[status] || status;
-        }
-        
-        function formatDate(dateStr) {
-            if (!dateStr) return '—';
-            try {
-                return new Date(dateStr).toLocaleString('ru-RU');
-            } catch {
-                return dateStr;
-            }
-        }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-        
-        // Загрузка при старте
-        trackShipment();
-    </script>
+                <h1>Отслеживание посылок</h1>
+                <p class="subtitle">Введите трек-номер для отслеживания отправления</p>
+            </div>
+
+            <!-- Форма поиска -->
+            <div class="search-box">
+                <input type="text" class="search-input" id="trackingInput" placeholder="TRK001" value="TRK001" autocomplete="off">
+                <button class="search-btn" id="trackBtn">
+                    <span>🔍</span> Отследить
+                </button>
+            </div>
+
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <span>🚚 Система отслеживания</span>
+                <span class="status-badge badge-online" id="apiStatus">
+                    <span class="dot dot-green"></span> API активен
+                </span>
+            </div>
+
+            <!-- Контейнер для результатов -->
+            <div id="resultContainer"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>🔒 Все данные передаются по защищённому каналу</span>
+            <span class="footer-sep">•</span>
+            <span>© 2024 Почтовая система</span>
+            <span class="footer-sep">•</span>
+            <span>Версия 2.0</span>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
