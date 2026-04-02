@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-> Современная система отслеживания почтовых отправлений с реальным API и красивым интерфейсом
+> Современная система отслеживания почтовых отправлений 
 
 ## Особенности
 
