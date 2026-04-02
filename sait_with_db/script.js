@@ -1,224 +1,299 @@
-// script.js — фронтенд логика
 
-// API URL — используем относительный путь к Pages Functions
-// Если у вас есть отдельный Worker, замените на его адрес:
-// const API_URL = 'https://staff-api.ваш-аккаунт.workers.dev';
-const API_URL = '';  // Пустая строка = используем тот же хост
+const CONFIG = {
+    API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev',
+    DEFAULT_TRACKING: 'TRK001',
+    DEBOUNCE_DELAY: 300,
+    MAX_RETRIES: 3,
+    RETRY_DELAY: 1000
+};
 
-let departments = [];
+const STATUS_CONFIG = {
+    delivered: { name: 'Доставлено', icon: '🏠', chipClass: 'chip-delivered' },
+    in_transit: { name: 'В пути', icon: '🚚', chipClass: 'chip-transit' },
+    out_for_delivery: { name: 'Доставляется', icon: '🚲', chipClass: 'chip-transit' },
+    sorting: { name: 'На сортировке', icon: '📦', chipClass: 'chip-sorting' },
+    registered: { name: 'Зарегистрировано', icon: '📝', chipClass: 'chip-registered' },
+    arrived: { name: 'Прибыло', icon: '🏢', chipClass: 'chip-transit' },
+    accepted: { name: 'Принято', icon: '✅', chipClass: 'chip-registered' },
+    failed_delivery: { name: 'Неудачная доставка', icon: '⚠️', chipClass: 'chip-registered' },
+    returned: { name: 'Возвращено', icon: '🔄', chipClass: 'chip-registered' }
+};
 
-// Загрузка отделов
-async function loadDepartments() {
-  try {
-    console.log('🔄 Загрузка отделов...');
-    const response = await fetch(`${API_URL}/api/departments`);
-    
-    console.log('📡 Статус ответа:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const text = await response.text();
-    console.log('📦 Получен текст:', text.substring(0, 200));
-    
-    if (!text || text.trim() === '') {
-      throw new Error('Пустой ответ от сервера');
-    }
-    
-    departments = JSON.parse(text);
-    console.log('✅ Загружено отделов:', departments.length);
-    
-    const filterSelect = document.getElementById('departmentFilter');
-    const formSelect = document.getElementById('departmentId');
-    
-    if (filterSelect && formSelect) {
-      const options = departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-      filterSelect.innerHTML = '<option value="">Все отделы</option>' + options;
-      formSelect.innerHTML = options;
-    }
-  } catch (error) {
-    console.error('❌ Ошибка загрузки отделов:', error);
-    document.getElementById('employeesBody').innerHTML = 
-      `<tr><td colspan="8" class="loading">Ошибка: ${error.message}<br>
-      Проверьте, что API доступен: ${API_URL || ''}/api/departments</td></tr>`;
-  }
+const TYPE_CONFIG = {
+    letter: 'Письмо',
+    parcel: 'Посылка',
+    package: 'Бандероль',
+    document: 'Документы',
+    express: 'Экспресс'
+};
+
+const DOM = {
+    trackingInput: null,
+    trackBtn: null,
+    resultContainer: null,
+    apiStatus: null
+};
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
-// Загрузка сотрудников
-async function loadEmployees() {
-  const search = document.getElementById('searchInput')?.value || '';
-  const departmentId = document.getElementById('departmentFilter')?.value || '';
-  
-  let url = `${API_URL}/api/employees`;
-  const params = [];
-  if (search) params.push(`search=${encodeURIComponent(search)}`);
-  if (departmentId) params.push(`department_id=${departmentId}`);
-  if (params.length) url += '?' + params.join('&');
-  
-  try {
-    console.log('🔄 Загрузка сотрудников:', url);
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      throw new Error('Пустой ответ');
-    }
-    
-    const employees = JSON.parse(text);
-    console.log('✅ Загружено сотрудников:', employees.length);
-    renderEmployees(employees);
-  } catch (error) {
-    console.error('❌ Ошибка загрузки сотрудников:', error);
-    document.getElementById('employeesBody').innerHTML = 
-      `<tr><td colspan="8" class="loading">Ошибка: ${error.message}</td></tr>`;
-  }
-}
-
-// Рендер таблицы
-function renderEmployees(employees) {
-  const tbody = document.getElementById('employeesBody');
-  
-  if (!employees || employees.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="loading">Нет данных</td></tr>';
-    return;
-  }
-  
-  tbody.innerHTML = employees.map(emp => {
-    const initials = `${emp.first_name?.charAt(0) || ''}${emp.last_name?.charAt(0) || ''}`;
-    const avatarHtml = `<div class="avatar">${initials || '?'}</div>`;
-    
-    return `
-      <tr data-id="${emp.id}">
-        <td>${emp.id}</td>
-        <td>${avatarHtml}</td>
-        <td>${emp.last_name || ''} ${emp.first_name || ''}</td>
-        <td>${emp.email || '-'}</td>
-        <td>${emp.phone || '-'}</td>
-        <td>${emp.department_name || '-'}</td>
-        <td>${emp.hire_date || '-'}</td>
-        <td>
-          <div class="action-buttons">
-            <button class="action-btn edit" onclick="editEmployee(${emp.id})">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="action-btn delete" onclick="deleteEmployee(${emp.id})">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-// Добавление/редактирование сотрудника
-async function saveEmployee(event) {
-  event.preventDefault();
-  
-  const id = document.getElementById('employeeId').value;
-  const employee = {
-    first_name: document.getElementById('firstName').value,
-    last_name: document.getElementById('lastName').value,
-    email: document.getElementById('email').value,
-    phone: document.getElementById('phone').value,
-    department_id: document.getElementById('departmentId').value,
-    hire_date: document.getElementById('hireDate').value
-  };
-  
-  const url = id ? `${API_URL}/api/employees/${id}` : `${API_URL}/api/employees`;
-  const method = id ? 'PUT' : 'POST';
-  
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(employee)
-    });
-    
-    if (response.ok) {
-      closeModal();
-      loadEmployees();
-    } else {
-      const error = await response.text();
-      alert('Ошибка при сохранении: ' + error);
-    }
-  } catch (error) {
-    alert('Ошибка сети: ' + error.message);
-  }
-}
-
-// Редактирование сотрудника
-async function editEmployee(id) {
-  try {
-    const response = await fetch(`${API_URL}/api/employees/${id}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const employee = await response.json();
-    
-    document.getElementById('modalTitle').textContent = 'Редактировать сотрудника';
-    document.getElementById('employeeId').value = employee.id;
-    document.getElementById('firstName').value = employee.first_name || '';
-    document.getElementById('lastName').value = employee.last_name || '';
-    document.getElementById('email').value = employee.email || '';
-    document.getElementById('phone').value = employee.phone || '';
-    document.getElementById('departmentId').value = employee.department_id || '';
-    document.getElementById('hireDate').value = employee.hire_date || '';
-    
-    document.getElementById('employeeModal').classList.add('show');
-  } catch (error) {
-    alert('Ошибка загрузки сотрудника: ' + error.message);
-  }
-}
-
-// Удаление сотрудника
-async function deleteEmployee(id) {
-  if (confirm('Удалить сотрудника?')) {
+function formatDate(dateStr) {
+    if (!dateStr) return '—';
     try {
-      const response = await fetch(`${API_URL}/api/employees/${id}`, { method: 'DELETE' });
-      if (response.ok) {
-        loadEmployees();
-      } else {
-        alert('Ошибка при удалении');
-      }
-    } catch (error) {
-      alert('Ошибка сети: ' + error.message);
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        return date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return dateStr;
     }
-  }
 }
 
-// Модальное окно
-function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Добавить сотрудника';
-  document.getElementById('employeeForm').reset();
-  document.getElementById('employeeId').value = '';
-  document.getElementById('employeeModal').classList.add('show');
+function getStatusInfo(status) {
+    return STATUS_CONFIG[status] || {
+        name: status || 'Неизвестно',
+        icon: '📍',
+        chipClass: 'chip-registered'
+    };
 }
 
-function closeModal() {
-  document.getElementById('employeeModal').classList.remove('show');
+
+function getTypeName(type) {
+    return TYPE_CONFIG[type] || type || '—';
 }
 
-// Debounce для поиска
-let searchTimeout;
-function onSearch() {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => loadEmployees(), 300);
+
+function showLoading() {
+    if (!DOM.resultContainer) return;
+    DOM.resultContainer.innerHTML = `
+        <div class="loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Поиск отправления...</div>
+        </div>
+    `;
 }
 
-// Инициализация
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 Страница загружена, инициализация...');
-  await loadDepartments();
-  await loadEmployees();
-  
-  document.getElementById('searchInput')?.addEventListener('input', onSearch);
-  document.getElementById('departmentFilter')?.addEventListener('change', () => loadEmployees());
-  document.getElementById('addEmployeeBtn')?.addEventListener('click', openAddModal);
-  document.getElementById('employeeForm')?.addEventListener('submit', saveEmployee);
-  document.getElementById('cancelBtn')?.addEventListener('click', closeModal);
-  document.querySelector('.close')?.addEventListener('click', closeModal);
-});
+
+function showError(message, statusCode = null) {
+    if (!DOM.resultContainer) return;
+    let errorMessage = message || 'Произошла ошибка при поиске';
+    if (statusCode === 404) {
+        errorMessage = 'Посылка с таким трек-номером не найдена';
+    }
+    DOM.resultContainer.innerHTML = `
+        <div class="error-box">
+            <div class="error-icon">📭</div>
+            <div class="error-title">Посылка не найдена</div>
+            <div class="error-message">${escapeHtml(errorMessage)}</div>
+        </div>
+    `;
+}
+
+
+function updateApiStatus(isOnline) {
+    if (!DOM.apiStatus) return;
+    if (isOnline) {
+        DOM.apiStatus.className = 'status-badge badge-online';
+        DOM.apiStatus.innerHTML = '<span class="dot dot-green"></span> API активен';
+    } else {
+        DOM.apiStatus.className = 'status-badge badge-offline';
+        DOM.apiStatus.innerHTML = '<span class="dot dot-red"></span> API недоступен';
+    }
+}
+
+
+function renderResult(data) {
+    if (!data || !data.shipment) {
+        showError('Некорректные данные');
+        return;
+    }
+    
+    const statusInfo = getStatusInfo(data.currentStatus?.status);
+    const currentStatus = data.currentStatus || {};
+    
+    const html = `
+        <div class="result-card">
+            <div class="shipment-header">
+                <div class="tracking-number">📦 ${escapeHtml(data.shipment.tracking_number)}</div>
+                <div class="status-chip ${statusInfo.chipClass}">
+                    <span>${statusInfo.icon}</span> ${statusInfo.name}
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">📋 ПОЛУЧАТЕЛЬ</div>
+                    <div class="info-value">${escapeHtml(data.shipment.recipient_name)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📦 ТИП</div>
+                    <div class="info-value">${getTypeName(data.shipment.type)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">⚖️ ВЕС</div>
+                    <div class="info-value">${data.shipment.weight_kg} кг</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📍 ТЕКУЩЕЕ МЕСТО</div>
+                    <div class="info-value">${escapeHtml(currentStatus.location_index || '—')}</div>
+                </div>
+            </div>
+
+            <div class="timeline-title">
+                <span>📜</span> История перемещений
+            </div>
+
+            <div class="timeline">
+                ${(data.history || []).map((item, index) => {
+                    const itemStatus = getStatusInfo(item.status);
+                    return `
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-date">${formatDate(item.status_date)}</div>
+                            <div class="timeline-status">${itemStatus.icon} ${itemStatus.name}</div>
+                            <div class="timeline-location">📍 Отделение: ${escapeHtml(item.location_index)}</div>
+                            ${item.notes ? `<div class="timeline-notes">📝 ${escapeHtml(item.notes)}</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+    
+    if (DOM.resultContainer) {
+        DOM.resultContainer.innerHTML = html;
+    }
+}
+
+
+async function fetchTracking(tracking, retryCount = 0) {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/api/postal/track/${tracking}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('NOT_FOUND');
+            }
+            if (response.status >= 500 && retryCount < CONFIG.MAX_RETRIES) {
+                await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                return fetchTracking(tracking, retryCount + 1);
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        updateApiStatus(true);
+        return data;
+    } catch (error) {
+        if (error.message === 'NOT_FOUND') {
+            throw error;
+        }
+        updateApiStatus(false);
+        throw error;
+    }
+}
+
+
+async function trackShipment() {
+    const tracking = DOM.trackingInput?.value.trim().toUpperCase();
+    
+    if (!tracking) {
+        showError('Введите трек-номер');
+        return;
+    }
+    
+    // Basic validation
+    if (!/^[A-Z0-9]{6,20}$/.test(tracking)) {
+        showError('Неверный формат трек-номера. Допустимы буквы и цифры (6-20 символов)');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const data = await fetchTracking(tracking);
+        renderResult(data);
+    } catch (error) {
+        if (error.message === 'NOT_FOUND') {
+            showError('Посылка с таким трек-номером не найдена', 404);
+        } else {
+            showError(error.message || 'Ошибка соединения с сервером');
+        }
+        console.error('Tracking error:', error);
+    }
+}
+
+
+function initDomReferences() {
+    DOM.trackingInput = document.getElementById('trackingInput');
+    DOM.trackBtn = document.getElementById('trackBtn');
+    DOM.resultContainer = document.getElementById('resultContainer');
+    DOM.apiStatus = document.getElementById('apiStatus');
+}
+
+
+function setupEventListeners() {
+    if (DOM.trackBtn) {
+        DOM.trackBtn.addEventListener('click', trackShipment);
+    }
+    
+    if (DOM.trackingInput) {
+        DOM.trackingInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                trackShipment();
+            }
+        });
+    }
+}
+
+
+async function checkApiHealth() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/api/test`);
+        updateApiStatus(response.ok);
+    } catch {
+        updateApiStatus(false);
+    }
+}
+
+async function loadDefaultShipment() {
+    if (CONFIG.DEFAULT_TRACKING) {
+        try {
+            const data = await fetchTracking(CONFIG.DEFAULT_TRACKING);
+            renderResult(data);
+        } catch (error) {
+            console.log('Default shipment not found');
+        }
+    }
+}
+
+
+function init() {
+    initDomReferences();
+    setupEventListeners();
+    checkApiHealth();
+    loadDefaultShipment();
+}
+
+// Start the application when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
