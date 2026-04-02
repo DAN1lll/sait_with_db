@@ -176,80 +176,61 @@ async function trackShipment() {
 }
 
 
+
 (function() {
     let clickCount = 0;
-    let timeout = null;
     let easterEggShown = false;
     
-    function initEasterEgg() {
-        const logo = document.querySelector('.logo');
-        if (!logo) {
-            setTimeout(initEasterEgg, 500);
-            return;
-        }
+    function showEasterEgg() {
+        if (easterEggShown) return;
+        easterEggShown = true;
         
-        logo.style.cursor = 'pointer';
+        const eggDiv = document.createElement('div');
+        eggDiv.innerHTML = 'by Назаров Даниил from ИСП224/1';
+        eggDiv.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #a5b4fc;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid #334155;
+        `;
+        document.body.appendChild(eggDiv);
         
-        logo.addEventListener('click', () => {
-            clickCount++;
-            
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                clickCount = 0;
-            }, 800);
-            
-            if (clickCount === 3 && !easterEggShown) {
-                easterEggShown = true;
-                
-                const eggDiv = document.createElement('div');
-                eggDiv.innerHTML = 'by Назаров Даниил from ИСП224/1';
-                eggDiv.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    background: linear-gradient(135deg, #1e293b, #0f172a);
-                    color: #a5b4fc;
-                    padding: 8px 16px;
-                    border-radius: 40px;
-                    font-size: 12px;
-                    font-family: monospace;
-                    z-index: 9999;
-                    opacity: 0;
-                    transform: translateY(10px);
-                    transition: all 0.3s ease;
-                    pointer-events: none;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                    border: 1px solid #334155;
-                `;
-                document.body.appendChild(eggDiv);
-                
-                setTimeout(() => {
-                    eggDiv.style.opacity = '1';
-                    eggDiv.style.transform = 'translateY(0)';
-                }, 10);
-                
-                setTimeout(() => {
-                    eggDiv.style.opacity = '0';
-                    eggDiv.style.transform = 'translateY(10px)';
-                    setTimeout(() => {
-                        if (eggDiv && eggDiv.remove) eggDiv.remove();
-                    }, 500);
-                }, 5000);
-                
-                setTimeout(() => {
-                    easterEggShown = false;
-                }, 6000);
-            }
-        });
+        setTimeout(() => {
+            eggDiv.remove();
+            easterEggShown = false;
+        }, 5000);
     }
     
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initEasterEgg);
-    } else {
-        initEasterEgg();
-    }
+    // Ждём загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const logo = document.querySelector('.logo');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', function() {
+                clickCount++;
+                setTimeout(() => { clickCount = 0; }, 1000);
+                if (clickCount === 3) {
+                    showEasterEgg();
+                    clickCount = 0;
+                }
+            });
+        } else {
+            console.log('Логотип не найден');
+        }
+    });
 })();
 
+console.log('%c by Назаров Даниил from ИСП224/1 ', 
+    'background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 12px;'
+);
 // Console message
 console.log('%c by Назаров Даниил from ИСП224/1 ', 
     'background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 12px;'
