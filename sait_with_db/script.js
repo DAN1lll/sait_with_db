@@ -1,4 +1,80 @@
 
+(function() {
+    let clickCount = 0;
+    let timeout = null;
+    let easterEggShown = false;
+    
+    // Ждём загрузки DOM
+    function initEasterEgg() {
+        const logo = document.querySelector('.logo');
+        if (!logo) {
+            setTimeout(initEasterEgg, 500);
+            return;
+        }
+        
+        logo.style.cursor = 'pointer';
+        
+        logo.addEventListener('click', () => {
+            clickCount++;
+            
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                clickCount = 0;
+            }, 800);
+            
+            if (clickCount === 3 && !easterEggShown) {
+                easterEggShown = true;
+                
+                const eggDiv = document.createElement('div');
+                eggDiv.innerHTML = 'by Назаров Даниил from ИСП224/1';
+                eggDiv.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #1e293b, #0f172a);
+                    color: #a5b4fc;
+                    padding: 8px 16px;
+                    border-radius: 40px;
+                    font-size: 12px;
+                    font-family: monospace;
+                    z-index: 9999;
+                    opacity: 0;
+                    transform: translateY(10px);
+                    transition: all 0.3s ease;
+                    pointer-events: none;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    border: 1px solid #334155;
+                `;
+                document.body.appendChild(eggDiv);
+                
+                setTimeout(() => {
+                    eggDiv.style.opacity = '1';
+                    eggDiv.style.transform = 'translateY(0)';
+                }, 10);
+                
+                setTimeout(() => {
+                    eggDiv.style.opacity = '0';
+                    eggDiv.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        if (eggDiv && eggDiv.remove) eggDiv.remove();
+                    }, 500);
+                }, 5000);
+                
+                setTimeout(() => {
+                    easterEggShown = false;
+                }, 6000);
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEasterEgg);
+    } else {
+        initEasterEgg();
+    }
+})();
+
+
 const CONFIG = {
     API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev',
     DEFAULT_TRACKING: 'TRK001',
