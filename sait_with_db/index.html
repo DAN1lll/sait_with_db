@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Отслеживание почтовых отправлений. Введите трек-номер и получите полную информацию о местонахождении посылки.">
     <meta name="keywords" content="отслеживание посылок, почта, трек-номер, доставка">
-    <meta name="author" content="Postal Track">
+    <meta name="author" content="block_cot">
     <meta name="theme-color" content="#667eea">
     
     <title>Postal Track | Отслеживание посылок</title>
@@ -14,9 +14,815 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' text-anchor='middle' dy='.35em' font-size='60' fill='%23667eea'>📮</text></svg>">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="style.css">
     
-    <!-- Fonts -->
+    <!-- Fonts --><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postal Track | Отслеживание посылок</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(102, 126, 234, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 126, 234, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .particle {
+            position: fixed;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(20px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Главная карточка */
+        .hero-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 48px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Логотип */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 12px 32px;
+            border-radius: 80px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 30px -8px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 3px;
+        }
+
+        h1 {
+            font-size: 56px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a0aec0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 18px;
+        }
+
+        .search-section {
+            max-width: 700px;
+            margin: 0 auto 48px;
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 80px;
+            padding: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .search-container:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 80px;
+            overflow: hidden;
+        }
+
+        .search-icon {
+            padding: 0 20px;
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 18px 0;
+            color: white;
+            font-size: 16px;
+            font-family: 'Inter', monospace;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #475569;
+            font-weight: 400;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 12px 32px;
+            margin: 6px;
+            border-radius: 80px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .search-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Примеры трек-номеров */
+        .examples {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .example-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+
+        .example-badge:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 60px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-online {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* Результат */
+        .result-card {
+            margin-top: 32px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Карточка посылки */
+        .shipment-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .shipment-header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tracking-number {
+            font-family: monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .chip-delivered { background: #22c55e; color: white; }
+        .chip-transit { background: #f59e0b; color: white; }
+        .chip-sorting { background: #8b5cf6; color: white; }
+        .chip-registered { background: #64748b; color: white; }
+
+        .shipment-body {
+            padding: 32px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 32px;
+            padding-bottom: 28px;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            background: #1a1a2e;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-family: monospace;
+        }
+
+        .timeline-status {
+            font-weight: 600;
+            font-size: 15px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .timeline-location {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .timeline-notes {
+            font-size: 12px;
+            color: #a78bfa;
+            margin-top: 6px;
+        }
+
+        /* Лоадер */
+        .loader {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: #94a3b8;
+        }
+
+        /* Ошибка */
+        .error-card {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 24px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .error-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f87171;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: #94a3b8;
+        }
+
+        /* Футер */
+        .footer {
+            margin-top: 48px;
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #667eea;
+        }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .hero-card { padding: 24px; }
+            h1 { font-size: 32px; }
+            .logo-text { font-size: 18px; }
+            .logo { padding: 8px 20px; }
+            .status-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .shipment-header { flex-direction: column; align-items: flex-start; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .search-wrapper { flex-direction: column; background: transparent; }
+            .search-icon { display: none; }
+            .search-input { padding: 16px; background: rgba(0,0,0,0.3); border-radius: 40px; margin-bottom: 8px; }
+            .search-btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="gradient-bg"></div>
+    
+    <!-- Плавающие частицы -->
+    <div class="particle" style="width: 300px; height: 300px; top: -100px; right: -100px; animation-duration: 25s;"></div>
+    <div class="particle" style="width: 200px; height: 200px; bottom: -50px; left: -50px; animation-duration: 20s;"></div>
+    <div class="particle" style="width: 150px; height: 150px; top: 50%; left: 10%; animation-duration: 18s;"></div>
+
+    <div class="container">
+        <div class="hero-card">
+            <div class="logo-section">
+                <div class="logo">
+                    <span class="logo-icon">📮</span>
+                    <span class="logo-text">POSTAL TRACK</span>
+                </div>
+                <h1>Отслеживание посылок</h1>
+                <p class="subtitle">Мгновенный доступ к информации о ваших отправлениях</p>
+            </div>
+
+            <div class="search-section">
+                <div class="search-container">
+                    <div class="search-wrapper">
+                        <div class="search-icon">🔍</div>
+                        <input type="text" class="search-input" id="trackingInput" placeholder="Введите трек-номер" value="TRK001">
+                        <button class="search-btn" id="trackBtn">
+                            <span>📡</span> Отследить
+                        </button>
+                    </div>
+                </div>
+                <div class="examples">
+                    <span class="example-badge" data-tracking="TRK001">📦 TRK001</span>
+                    <span class="example-badge" data-tracking="TRK002">📦 TRK002</span>
+                    <span class="example-badge" data-tracking="TRK003">📦 TRK003</span>
+                    <span class="example-badge" data-tracking="TRK004">📦 TRK004</span>
+                    <span class="example-badge" data-tracking="TRK005">📦 TRK005</span>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>🚚</span> Система отслеживания
+                </div>
+                <div class="status-item">
+                    <span>⚡</span> 24/7 мониторинг
+                </div>
+                <div class="status-item">
+                    <span>🌍</span> Глобальная сеть
+                </div>
+                <div class="status-badge badge-online" id="apiStatus">
+                    <span class="dot"></span> API активен
+                </div>
+            </div>
+
+            <div id="resultContainer"></div>
+        </div>
+
+        <div class="footer">
+            <div> Все данные передаются по защищённому каналу</div>
+            <div class="footer-links">
+                <a href="#">О системе</a>
+                <a href="#">API документация</a>
+                <a href="#">Поддержка</a>
+                <a href="https://github.com/DAN1lll" target="_blank">GitHub</a>
+            </div>
+            <div style="margin-top: 16px;">© 2026 Почтовая система | Версия 1.0 | Разработано с ❤️</div>
+        </div>
+    </div>
+
+    <script>
+
+        const CONFIG = {
+            API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev',
+            DEFAULT_TRACKING: 'TRK001'
+        };
+
+        // Status mapping
+        const STATUS_CONFIG = {
+            delivered: { name: 'Доставлено', icon: '🏠', chipClass: 'chip-delivered' },
+            in_transit: { name: 'В пути', icon: '🚚', chipClass: 'chip-transit' },
+            out_for_delivery: { name: 'Доставляется', icon: '🚲', chipClass: 'chip-transit' },
+            sorting: { name: 'На сортировке', icon: '📦', chipClass: 'chip-sorting' },
+            registered: { name: 'Зарегистрировано', icon: '📝', chipClass: 'chip-registered' },
+            arrived: { name: 'Прибыло', icon: '🏢', chipClass: 'chip-transit' }
+        };
+
+        const TYPE_CONFIG = {
+            letter: 'Письмо', parcel: 'Посылка', package: 'Бандероль',
+            document: 'Документы', express: 'Экспресс'
+        };
+
+
+        const DOM = {
+            trackingInput: null,
+            trackBtn: null,
+            resultContainer: null,
+            apiStatus: null
+        };
+
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr;
+                return date.toLocaleString('ru-RU', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            } catch { return dateStr; }
+        }
+
+        function getStatusInfo(status) {
+            return STATUS_CONFIG[status] || { name: status || 'Неизвестно', icon: '', chipClass: 'chip-registered' };
+        }
+
+        function getTypeName(type) {
+            return TYPE_CONFIG[type] || type || '—';
+        }
+
+        function updateApiStatus(isOnline) {
+            if (!DOM.apiStatus) return;
+            if (isOnline) {
+                DOM.apiStatus.className = 'status-badge badge-online';
+                DOM.apiStatus.innerHTML = '<span class="dot"></span> API активен';
+            } else {
+                DOM.apiStatus.className = 'status-badge';
+                DOM.apiStatus.style.background = 'rgba(239,68,68,0.15)';
+                DOM.apiStatus.style.color = '#f87171';
+                DOM.apiStatus.style.border = '1px solid rgba(239,68,68,0.3)';
+                DOM.apiStatus.innerHTML = '<span style="background:#ef4444;"></span> API недоступен';
+            }
+        }
+
+        function showLoading() {
+            if (!DOM.resultContainer) return;
+            DOM.resultContainer.innerHTML = `
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    <div class="loader-text">Поиск отправления...</div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            if (!DOM.resultContainer) return;
+            DOM.resultContainer.innerHTML = `
+                <div class="error-card">
+                    <div class="error-icon"></div>
+                    <div class="error-title">Посылка не найдена</div>
+                    <div class="error-message">${escapeHtml(message)}</div>
+                </div>
+            `;
+        }
+
+        function renderResult(data) {
+            if (!data?.shipment) {
+                showError('Некорректные данные');
+                return;
+            }
+            
+            const statusInfo = getStatusInfo(data.currentStatus?.status);
+            const currentStatus = data.currentStatus || {};
+            
+            const html = `
+                <div class="result-card">
+                    <div class="shipment-card">
+                        <div class="shipment-header">
+                            <div class="tracking-number"> ${escapeHtml(data.shipment.tracking_number)}</div>
+                            <div class="status-chip ${statusInfo.chipClass}">
+                                <span>${statusInfo.icon}</span> ${statusInfo.name}
+                            </div>
+                        </div>
+                        <div class="shipment-body">
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-label"> Получатель</div>
+                                    <div class="stat-value">${escapeHtml(data.shipment.recipient_name)}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label"> Тип</div>
+                                    <div class="stat-value">${getTypeName(data.shipment.type)}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">⚖️ Вес</div>
+                                    <div class="stat-value">${data.shipment.weight_kg} кг</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label"> Местоположение</div>
+                                    <div class="stat-value">${escapeHtml(currentStatus.location_index || '—')}</div>
+                                </div>
+                            </div>
+                            <div class="timeline-title">
+                                <span>📜</span> История перемещений
+                            </div>
+                            <div class="timeline">
+                                ${(data.history || []).map(item => {
+                                    const itemStatus = getStatusInfo(item.status);
+                                    return `
+                                        <div class="timeline-item">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-date">${formatDate(item.status_date)}</div>
+                                            <div class="timeline-status">${itemStatus.icon} ${itemStatus.name}</div>
+                                            <div class="timeline-location"> Отделение: ${escapeHtml(item.location_index)}</div>
+                                            ${item.notes ? `<div class="timeline-notes">📝 ${escapeHtml(item.notes)}</div>` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            DOM.resultContainer.innerHTML = html;
+        }
+
+        async function trackShipment() {
+            const tracking = DOM.trackingInput?.value.trim().toUpperCase();
+            if (!tracking) {
+                showError('Введите трек-номер');
+                return;
+            }
+            
+            if (!/^[A-Z0-9]{6,20}$/.test(tracking)) {
+                showError('Неверный формат трек-номера');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/api/postal/track/${tracking}`);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error('NOT_FOUND');
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                updateApiStatus(true);
+                renderResult(data);
+            } catch (error) {
+                updateApiStatus(false);
+                if (error.message === 'NOT_FOUND') {
+                    showError('Посылка с таким трек-номером не найдена');
+                } else {
+                    showError(error.message || 'Ошибка соединения');
+                }
+            }
+        }
+
+
+        function init() {
+            DOM.trackingInput = document.getElementById('trackingInput');
+            DOM.trackBtn = document.getElementById('trackBtn');
+            DOM.resultContainer = document.getElementById('resultContainer');
+            DOM.apiStatus = document.getElementById('apiStatus');
+            
+            if (DOM.trackBtn) DOM.trackBtn.addEventListener('click', trackShipment);
+            if (DOM.trackingInput) {
+                DOM.trackingInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') trackShipment(); });
+            }
+            
+            document.querySelectorAll('.example-badge').forEach(badge => {
+                badge.addEventListener('click', () => {
+                    if (DOM.trackingInput) DOM.trackingInput.value = badge.dataset.tracking;
+                    trackShipment();
+                });
+            });
+            
+            trackShipment();
+        }
+        
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    </script>
+</body>
+</html>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 </head>
 <body>
