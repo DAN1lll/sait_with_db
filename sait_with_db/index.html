@@ -11,340 +11,462 @@
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 20px;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .card {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-        }
-        .header { text-align: center; margin-bottom: 40px; }
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            padding: 10px 28px;
-            border-radius: 40px;
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            gap: 8px;
             margin-bottom: 24px;
-            cursor: pointer;
-            transition: transform 0.2s;
+            flex-wrap: wrap;
         }
-        .logo:hover { transform: scale(1.02); }
-        .logo-icon { font-size: 24px; color: white; }
-        .logo-text { font-size: 20px; font-weight: 700; color: white; }
-        h1 { font-size: 32px; font-weight: 600; color: #1e293b; margin-bottom: 8px; }
-        .subtitle { color: #64748b; font-size: 16px; }
-        .search-section { max-width: 600px; margin: 0 auto 32px; }
-        .search-container {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
-        .search-container:focus-within {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        .search-wrapper { display: flex; align-items: center; }
-        .search-input {
-            flex: 1;
-            padding: 14px 20px;
+        .tab-btn {
+            background: rgba(255,255,255,0.2);
             border: none;
-            background: transparent;
-            font-size: 15px;
-            font-family: 'Inter', monospace;
-            outline: none;
-            color: #1e293b;
-        }
-        .search-input::placeholder { color: #94a3b8; }
-        .search-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            padding: 12px 28px;
-            margin: 4px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 40px;
             color: white;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .search-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
-        .examples {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .example-badge {
-            background: #f1f5f9;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Карточки */
+        .card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+        }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1e293b;
+            border-left: 4px solid #667eea;
+            padding-left: 12px;
+        }
+        
+        /* Формы */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
             color: #475569;
+            font-size: 13px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
             cursor: pointer;
-            font-family: monospace;
-            transition: all 0.2s;
         }
-        .example-badge:hover { background: #e2e8f0; color: #1e293b; }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            margin-bottom: 32px;
-            border-top: 1px solid #e2e8f0;
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        /* Таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
             border-bottom: 1px solid #e2e8f0;
-            flex-wrap: wrap;
-            gap: 16px;
         }
-        .status-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
         .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
         }
-        .badge-online { background: #dcfce7; color: #166534; }
-        .dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
-        .result-card { margin-top: 32px; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .shipment-card { background: #f8fafc; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .shipment-header {
-            background: #ffffff;
-            padding: 24px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .tracking-number { font-family: monospace; font-size: 22px; font-weight: 700; color: #1e293b; }
-        .status-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px; font-weight: 500; font-size: 13px; }
-        .chip-delivered { background: #22c55e; color: white; }
-        .chip-transit { background: #f59e0b; color: white; }
-        .chip-sorting { background: #8b5cf6; color: white; }
-        .chip-registered { background: #64748b; color: white; }
-        .shipment-body { padding: 28px; }
-        .info-grid {
+        .status-delivered { background: #22c55e; color: white; }
+        .status-transit { background: #f59e0b; color: white; }
+        .status-sorting { background: #8b5cf6; color: white; }
+        .status-registered { background: #64748b; color: white; }
+        
+        .loader { text-align: center; padding: 40px; color: #64748b; }
+        .error { color: #dc2626; background: #fef2f2; padding: 12px; border-radius: 12px; }
+        .success { color: #16a34a; background: #dcfce7; padding: 12px; border-radius: 12px; }
+        
+        .grid-2 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 32px;
         }
-        .info-card {
-            background: white;
+        .stat-card {
+            background: #f8fafc;
             border-radius: 16px;
-            padding: 16px 20px;
-            border: 1px solid #e2e8f0;
+            padding: 20px;
+            text-align: center;
         }
-        .info-label { font-size: 11px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .info-value { font-size: 16px; font-weight: 600; color: #0f172a; }
-        .timeline-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #1e293b; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
-        .timeline { position: relative; padding-left: 20px; }
-        .timeline::before { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, #667eea, #764ba2); border-radius: 2px; }
-        .timeline-item { position: relative; padding-left: 28px; padding-bottom: 24px; }
-        .timeline-item:last-child { padding-bottom: 0; }
-        .timeline-dot { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; background: white; border: 2px solid #667eea; border-radius: 50%; z-index: 1; }
-        .timeline-date { font-size: 12px; color: #64748b; margin-bottom: 6px; font-family: monospace; }
-        .timeline-status { font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 4px; }
-        .timeline-location { font-size: 13px; color: #475569; }
-        .loader { text-align: center; padding: 60px; }
-        .loader-spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .error-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 20px; padding: 40px; text-align: center; }
-        .error-title { font-size: 18px; font-weight: 600; color: #dc2626; margin-bottom: 8px; }
-        .footer { margin-top: 32px; text-align: center; padding: 24px; color: rgba(255, 255, 255, 0.7); font-size: 13px; }
-        .footer-links { display: flex; justify-content: center; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
-        .footer-links a { color: rgba(255, 255, 255, 0.7); text-decoration: none; }
-        .footer-links a:hover { color: white; }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
         @media (max-width: 768px) {
-            .card { padding: 24px; }
-            h1 { font-size: 26px; }
-            .search-wrapper { flex-direction: column; background: transparent; }
-            .search-input { background: white; border-radius: 12px; margin: 4px; width: calc(100% - 8px); }
-            .search-btn { width: calc(100% - 8px); margin: 4px; }
-            .status-bar { flex-direction: column; align-items: flex-start; }
-            .shipment-header { flex-direction: column; align-items: flex-start; }
-            .info-grid { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+            th, td { padding: 8px; font-size: 12px; }
+            .tabs { justify-content: center; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="card">
-            <div class="header">
-                <div class="logo">
-                    <span class="logo-icon">✉</span>
-                    <span class="logo-text">POSTAL TRACK</span>
-                </div>
-                <h1>Отслеживание отправлений</h1>
-                <p class="subtitle">Введите трек-номер для получения актуальной информации</p>
+        <!-- Шапка -->
+        <div class="card" style="text-align: center; margin-bottom: 20px;">
+            <div class="logo" style="cursor: pointer;">
+                <span style="font-size: 28px;">✉</span>
+                <span style="font-size: 24px; font-weight: 700;">POSTAL TRACK</span>
             </div>
-
-            <div class="search-section">
-                <div class="search-container">
-                    <div class="search-wrapper">
-                        <input type="text" class="search-input" id="trackingInput" placeholder="Введите трек-номер" value="TRK001">
-                        <button class="search-btn" id="trackBtn">Отследить</button>
+            <p style="color: #64748b;">Система отслеживания почтовых отправлений</p>
+        </div>
+        
+        <!-- Вкладки -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="track">📦 Отслеживание</button>
+            <button class="tab-btn" data-tab="stuck">⏰ Задержки (>2 дней)</button>
+            <button class="tab-btn" data-tab="workload">📊 Загруженность отделений</button>
+            <button class="tab-btn" data-tab="register">➕ Регистрация отправления</button>
+            <button class="tab-btn" data-tab="update">🔄 Обновление статуса</button>
+            <button class="tab-btn" data-tab="close">🚪 Закрытие отделения</button>
+        </div>
+        
+        <!-- Вкладка 1: Отслеживание -->
+        <div id="tab-track" class="tab-content active">
+            <div class="card">
+                <h2>📍 Текущее местоположение отправления</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group">
+                            <label>Трек-номер</label>
+                            <input type="text" id="trackingInput" placeholder="TRK001" value="TRK001">
+                        </div>
+                        <button class="btn" onclick="trackShipment()">Отследить</button>
+                    </div>
+                    <div id="trackResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;">
+                        <div class="loader">Введите трек-номер для отслеживания</div>
                     </div>
                 </div>
-                <div class="examples">
-                    <span class="example-badge" data-tracking="TRK001">TRK001</span>
-                    <span class="example-badge" data-tracking="TRK002">TRK002</span>
-                    <span class="example-badge" data-tracking="TRK003">TRK003</span>
-                    <span class="example-badge" data-tracking="TRK004">TRK004</span>
-                    <span class="example-badge" data-tracking="TRK005">TRK005</span>
+            </div>
+        </div>
+        
+        <!-- Вкладка 2: Задержки по статусам -->
+        <div id="tab-stuck" class="tab-content">
+            <div class="card">
+                <h2>⏰ Отправления, застрявшие на этапе "сортировка" более 2 дней</h2>
+                <div id="stuckResult"><div class="loader">Загрузка...</div></div>
+            </div>
+        </div>
+        
+        <!-- Вкладка 3: Загруженность отделений -->
+        <div id="tab-workload" class="tab-content">
+            <div class="card">
+                <h2>📊 Загруженность отделений</h2>
+                <div id="workloadResult"><div class="loader">Загрузка...</div></div>
+            </div>
+        </div>
+        
+        <!-- Вкладка 4: Регистрация отправления -->
+        <div id="tab-register" class="tab-content">
+            <div class="card">
+                <h2>➕ Регистрация нового отправления</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group"><label>Отправитель *</label><input type="text" id="regSender" placeholder="Иван Петров"></div>
+                        <div class="form-group"><label>Получатель *</label><input type="text" id="regRecipient"></div>
+                        <div class="form-group"><label>Адрес получателя *</label><input type="text" id="regAddress"></div>
+                        <div class="form-group"><label>Вес (кг)</label><input type="number" id="regWeight" value="1.0" step="0.1"></div>
+                        <div class="form-group">
+                            <label>Тип</label>
+                            <select id="regType"><option value="parcel">Посылка</option><option value="letter">Письмо</option><option value="package">Бандероль</option><option value="document">Документы</option><option value="express">Экспресс</option></select>
+                        </div>
+                        <div class="form-group"><label>Отделение</label><input type="text" id="regOffice" value="101000"></div>
+                        <button class="btn" onclick="registerShipment()">Зарегистрировать</button>
+                    </div>
+                    <div id="registerResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
                 </div>
             </div>
-
-            <div class="status-bar">
-                <div class="status-item"><span class="dot"></span> Система отслеживания</div>
-                <div class="status-item"><span class="dot"></span> Круглосуточный мониторинг</div>
-                <div class="status-badge badge-online" id="apiStatus"><span class="dot"></span> API активен</div>
-            </div>
-
-            <div id="resultContainer"></div>
         </div>
-
-        <div class="footer">
-            <div>Все данные передаются по защищённому каналу</div>
-            <div class="footer-links">
-                <a href="#">О системе</a>
-                <a href="#">API документация</a>
-                <a href="#">Поддержка</a>
-                <a href="https://github.com/DAN1lll" target="_blank">GitHub</a>
+        
+        <!-- Вкладка 5: Обновление статуса -->
+        <div id="tab-update" class="tab-content">
+            <div class="card">
+                <h2>🔄 Обновление статуса отправления</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group"><label>Трек-номер</label><input type="text" id="updateTracking" placeholder="TRK001"></div>
+                        <div class="form-group">
+                            <label>Статус</label>
+                            <select id="updateStatus">
+                                <option value="registered">Зарегистрировано</option>
+                                <option value="accepted">Принято</option>
+                                <option value="in_transit">В пути</option>
+                                <option value="sorting">На сортировке</option>
+                                <option value="arrived">Прибыло</option>
+                                <option value="out_for_delivery">Доставляется</option>
+                                <option value="delivered">Доставлено</option>
+                                <option value="failed_delivery">Неудачная доставка</option>
+                                <option value="returned">Возвращено</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Отделение</label><input type="text" id="updateOffice" value="101000"></div>
+                        <div class="form-group"><label>Комментарий</label><input type="text" id="updateNotes" placeholder="Необязательно"></div>
+                        <button class="btn" onclick="updateStatus()">Обновить статус</button>
+                    </div>
+                    <div id="updateResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
+                </div>
             </div>
-            <div>© 2026 Почтовая система | Версия 2.0 | Разработано с использованием Cloudflare Workers</div>
+        </div>
+        
+        <!-- Вкладка 6: Закрытие отделения -->
+        <div id="tab-close" class="tab-content">
+            <div class="card">
+                <h2>🚪 Закрытие отделения</h2>
+                <div class="grid-2">
+                    <div>
+                        <div class="form-group"><label>Индекс отделения</label><input type="text" id="closeOffice" placeholder="101000"></div>
+                        <button class="btn btn-secondary" onclick="closeOffice()">Закрыть отделение</button>
+                    </div>
+                    <div id="closeResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
+                </div>
+            </div>
         </div>
     </div>
-
+    
     <script>
-        // ============================================
-        // POSTAL TRACKING SYSTEM
-        // ============================================
+        const API_URL = 'https://crimson-mountain-ad6e.block-cot.workers.dev';
         
-        const CONFIG = { API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev' };
+        // Переключение вкладок
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+                if (btn.dataset.tab === 'stuck') loadStuck();
+                if (btn.dataset.tab === 'workload') loadWorkload();
+            });
+        });
         
-        const STATUS_MAP = {
-            'registered': { name: 'Зарегистрировано', class: 'chip-registered' },
-            'accepted': { name: 'Принято', class: 'chip-registered' },
-            'in_transit': { name: 'В пути', class: 'chip-transit' },
-            'sorting': { name: 'На сортировке', class: 'chip-sorting' },
-            'arrived': { name: 'Прибыло', class: 'chip-transit' },
-            'out_for_delivery': { name: 'Доставляется', class: 'chip-transit' },
-            'delivered': { name: 'Доставлено', class: 'chip-delivered' },
-            'failed_delivery': { name: 'Неудачная доставка', class: 'chip-registered' },
-            'returned': { name: 'Возвращено', class: 'chip-registered' }
-        };
+        // ========== 1. ОТСЛЕЖИВАНИЕ (текущее местоположение) ==========
+        async function trackShipment() {
+            const tracking = document.getElementById('trackingInput').value.trim().toUpperCase();
+            if (!tracking) { showResult('trackResult', 'Введите трек-номер', 'error'); return; }
+            
+            showResult('trackResult', 'Загрузка...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/postal/track/${tracking}`);
+                if (!resp.ok) throw new Error('Не найдено');
+                const data = await resp.json();
+                
+                const statusClass = getStatusClass(data.currentStatus?.status);
+                document.getElementById('trackResult').innerHTML = `
+                    <div><strong>📦 Трек-номер:</strong> ${data.shipment.tracking_number}</div>
+                    <div><strong>👤 Получатель:</strong> ${escapeHtml(data.shipment.recipient_name)}</div>
+                    <div><strong>📍 Текущее место:</strong> ${escapeHtml(data.currentStatus?.location_index || '—')}</div>
+                    <div><strong>📊 Статус:</strong> <span class="status-badge ${statusClass}">${getStatusName(data.currentStatus?.status)}</span></div>
+                    <div><strong>🕐 Последнее обновление:</strong> ${formatDate(data.currentStatus?.status_date)}</div>
+                    <hr style="margin: 12px 0">
+                    <details><summary>📜 История перемещений</summary>
+                        ${(data.history || []).map(h => `<div>• ${formatDate(h.status_date)} — ${getStatusName(h.status)} (${h.location_index})</div>`).join('')}
+                    </details>
+                `;
+            } catch(e) {
+                showResult('trackResult', 'Отправление не найдено', 'error');
+            }
+        }
         
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+        // ========== 2. ЗАДЕРЖКИ ПО СТАТУСАМ ==========
+        async function loadStuck() {
+            showResult('stuckResult', 'Загрузка...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/postal/stuck`);
+                const data = await resp.json();
+                if (!data.length) {
+                    document.getElementById('stuckResult').innerHTML = '<div class="success">✅ Нет отправлений, застрявших в сортировке более 2 дней</div>';
+                    return;
+                }
+                document.getElementById('stuckResult').innerHTML = `
+                    <table><thead><tr><th>Трек-номер</th><th>Получатель</th><th>Тип</th><th>Дней в сортировке</th></tr></thead><tbody>
+                    ${data.map(s => `<tr><td>${s.tracking_number}</td><td>${escapeHtml(s.recipient_name)}</td><td>${s.type}</td><td>${Math.round(s.days_stuck)}</td></tr>`).join('')}
+                    </tbody></table>
+                `;
+            } catch(e) { showResult('stuckResult', 'Ошибка загрузки', 'error'); }
+        }
+        
+        // ========== 3. ЗАГРУЖЕННОСТЬ ОТДЕЛЕНИЙ ==========
+        async function loadWorkload() {
+            showResult('workloadResult', 'Загрузка...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/postal/office-workload`);
+                const data = await resp.json();
+                document.getElementById('workloadResult').innerHTML = `
+                    <table><thead><tr><th>Индекс</th><th>Адрес</th><th>Телефон</th><th>Обработано</th><th>Активных</th></tr></thead><tbody>
+                    ${data.map(o => `<tr><td>${o.index_code}</td><td>${escapeHtml(o.address)}</td><td>${o.phone}</td><td>${o.total_shipments_handled || 0}</td><td>${o.active_shipments || 0}</td></tr>`).join('')}
+                    </tbody></table>
+                `;
+            } catch(e) { showResult('workloadResult', 'Ошибка загрузки', 'error'); }
+        }
+        
+        // ========== 4. РЕГИСТРАЦИЯ ОТПРАВЛЕНИЯ ==========
+        async function registerShipment() {
+            const data = {
+                recipient_name: document.getElementById('regRecipient').value,
+                recipient_address: document.getElementById('regAddress').value,
+                sender_name: document.getElementById('regSender').value,
+                weight_kg: parseFloat(document.getElementById('regWeight').value),
+                type: document.getElementById('regType').value,
+                location_index: document.getElementById('regOffice').value
+            };
+            if (!data.recipient_name || !data.recipient_address) {
+                showResult('registerResult', 'Заполните получателя и адрес', 'error');
+                return;
+            }
+            
+            showResult('registerResult', 'Регистрация...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/admin/shipment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await resp.json();
+                if (resp.ok) {
+                    showResult('registerResult', `✅ Отправление зарегистрировано! Трек-номер: ${result.tracking_number}`, 'success');
+                    document.getElementById('regRecipient').value = '';
+                    document.getElementById('regAddress').value = '';
+                } else {
+                    showResult('registerResult', `❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch(e) { showResult('registerResult', 'Ошибка соединения', 'error'); }
+        }
+        
+        // ========== 5. ОБНОВЛЕНИЕ СТАТУСА ==========
+        async function updateStatus() {
+            const data = {
+                tracking_number: document.getElementById('updateTracking').value.trim().toUpperCase(),
+                status: document.getElementById('updateStatus').value,
+                location_index: document.getElementById('updateOffice').value,
+                notes: document.getElementById('updateNotes').value
+            };
+            if (!data.tracking_number) {
+                showResult('updateResult', 'Введите трек-номер', 'error');
+                return;
+            }
+            
+            showResult('updateResult', 'Обновление...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/admin/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await resp.json();
+                if (resp.ok) {
+                    showResult('updateResult', `✅ Статус обновлён!`, 'success');
+                    document.getElementById('updateTracking').value = '';
+                    document.getElementById('updateNotes').value = '';
+                } else {
+                    showResult('updateResult', `❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch(e) { showResult('updateResult', 'Ошибка соединения', 'error'); }
+        }
+        
+        // ========== 6. ЗАКРЫТИЕ ОТДЕЛЕНИЯ ==========
+        async function closeOffice() {
+            const office = document.getElementById('closeOffice').value.trim();
+            if (!office) {
+                showResult('closeResult', 'Введите индекс отделения', 'error');
+                return;
+            }
+            
+            showResult('closeResult', 'Проверка...', 'loader');
+            try {
+                const resp = await fetch(`${API_URL}/api/admin/close-office`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index_code: office })
+                });
+                const result = await resp.json();
+                showResult('closeResult', result.message || (resp.ok ? '✅ Отделение закрыто' : '❌ Ошибка'), result.success ? 'success' : 'error');
+            } catch(e) { showResult('closeResult', 'Ошибка соединения', 'error'); }
+        }
+        
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function showResult(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            if (type === 'loader') el.innerHTML = `<div class="loader">${message}</div>`;
+            else if (type === 'error') el.innerHTML = `<div class="error">❌ ${message}</div>`;
+            else if (type === 'success') el.innerHTML = `<div class="success">✅ ${message}</div>`;
+            else el.innerHTML = message;
+        }
+        
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
         
         function formatDate(dateStr) {
             if (!dateStr) return '—';
-            try { return new Date(dateStr).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-            catch { return dateStr; }
+            try { return new Date(dateStr).toLocaleString('ru-RU'); } catch { return dateStr; }
         }
         
-        function getStatusInfo(status) { return STATUS_MAP[status] || { name: status || 'Неизвестно', class: 'chip-registered' }; }
+        function getStatusName(status) {
+            const map = { 'registered':'Зарегистрировано','accepted':'Принято','in_transit':'В пути','sorting':'На сортировке','arrived':'Прибыло','out_for_delivery':'Доставляется','delivered':'Доставлено','failed_delivery':'Неудачная доставка','returned':'Возвращено' };
+            return map[status] || status;
+        }
         
-        async function trackShipment() {
-            const tracking = document.getElementById('trackingInput').value.trim().toUpperCase();
-            if (!tracking) { showError('Введите трек-номер'); return; }
-            if (!/^[A-Z0-9]{6,20}$/.test(tracking)) { showError('Неверный формат трек-номера'); return; }
-            
-            showLoading();
-            try {
-                const response = await fetch(`${CONFIG.API_URL}/api/postal/track/${tracking}`);
-                if (!response.ok) throw new Error(response.status === 404 ? 'NOT_FOUND' : 'HTTP error');
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
-                renderResult(data);
-            } catch (error) {
-                showError(error.message === 'NOT_FOUND' ? 'Отправление не найдено' : 'Ошибка соединения');
+        function getStatusClass(status) {
+            const map = { 'delivered':'status-delivered','in_transit':'status-transit','out_for_delivery':'status-transit','sorting':'status-sorting','registered':'status-registered','arrived':'status-transit' };
+            return map[status] || 'status-registered';
+        }
+        
+        // Пасхалка
+        let clickCount = 0;
+        document.querySelector('.logo')?.addEventListener('click', () => {
+            clickCount++;
+            setTimeout(() => clickCount = 0, 1000);
+            if (clickCount === 3) {
+                const egg = document.createElement('div');
+                egg.innerHTML = 'by Назаров Даниил from ИСП224/1';
+                egg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#1e293b; color:#a5b4fc; padding:8px 16px; border-radius:40px; font-size:12px; z-index:9999;';
+                document.body.appendChild(egg);
+                setTimeout(() => egg.remove(), 5000);
+                clickCount = 0;
             }
-        }
-        
-        function showLoading() {
-            document.getElementById('resultContainer').innerHTML = `<div class="loader"><div class="loader-spinner"></div><div class="loader-text">Поиск отправления...</div></div>`;
-        }
-        
-        function showError(message) {
-            document.getElementById('resultContainer').innerHTML = `<div class="error-card"><div class="error-title">⚠ ${escapeHtml(message)}</div></div>`;
-        }
-        
-        function renderResult(data) {
-            if (!data?.shipment) { showError('Некорректные данные'); return; }
-            const statusInfo = getStatusInfo(data.currentStatus?.status);
-            const currentStatus = data.currentStatus || {};
-            let historyHtml = '';
-            if (data.history && data.history.length) {
-                historyHtml = `<div class="timeline-title">История перемещений</div><div class="timeline">` +
-                    data.history.map(item => {
-                        const itemStatus = getStatusInfo(item.status);
-                        return `<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">${formatDate(item.status_date)}</div><div class="timeline-status">${itemStatus.name}</div><div class="timeline-location">Отделение: ${escapeHtml(item.location_index)}</div>${item.notes ? `<div class="timeline-notes">${escapeHtml(item.notes)}</div>` : ''}</div>`;
-                    }).join('') + `</div>`;
-            }
-            document.getElementById('resultContainer').innerHTML = `
-                <div class="result-card"><div class="shipment-card">
-                    <div class="shipment-header"><div class="tracking-number">${escapeHtml(data.shipment.tracking_number)}</div><div class="status-chip ${statusInfo.class}">${statusInfo.name}</div></div>
-                    <div class="shipment-body">
-                        <div class="info-grid">
-                            <div class="info-card"><div class="info-label">ПОЛУЧАТЕЛЬ</div><div class="info-value">${escapeHtml(data.shipment.recipient_name)}</div></div>
-                            <div class="info-card"><div class="info-label">ТИП</div><div class="info-value">${data.shipment.type === 'parcel' ? 'Посылка' : data.shipment.type}</div></div>
-                            <div class="info-card"><div class="info-label">ВЕС</div><div class="info-value">${data.shipment.weight_kg} кг</div></div>
-                            <div class="info-card"><div class="info-label">МЕСТОПОЛОЖЕНИЕ</div><div class="info-value">${escapeHtml(currentStatus.location_index || '—')}</div></div>
-                        </div>
-                        ${historyHtml}
-                    </div>
-                </div></div>
-            `;
-        }
-        
-        // ============================================
-        // EASTER EGG: by Назаров Даниил from ИСП224/1
-        // ============================================
-        (function() {
-            let clickCount = 0;
-            let easterEggShown = false;
-            
-            function showEasterEgg() {
-                if (easterEggShown) return;
-                easterEggShown = true;
-                const eggDiv = document.createElement('div');
-                eggDiv.innerHTML = 'by Назаров Даниил from ИСП224/1';
-                eggDiv.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #a5b4fc; padding: 8px 16px; border-radius: 40px; font-size: 12px; font-family: monospace; z-index: 9999; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid #334155;';
-                document.body.appendChild(eggDiv);
-                setTimeout(() => { eggDiv.remove(); easterEggShown = false; }, 5000);
-            }
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                const logo = document.querySelector('.logo');
-                if (logo) {
-                    logo.addEventListener('click', function() {
-                        clickCount++;
-                        setTimeout(() => { clickCount = 0; }, 1000);
-                        if (clickCount === 3) { showEasterEgg(); clickCount = 0; }
-                    });
-                }
-            });
-        })();
-        
-        console.log('%c by Назаров Даниил from ИСП224/1 ', 'background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-family: monospace; font-size: 12px;');
-        
-        document.getElementById('trackBtn').addEventListener('click', trackShipment);
-        document.getElementById('trackingInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') trackShipment(); });
-        document.querySelectorAll('.example-badge').forEach(badge => {
-            badge.addEventListener('click', () => { document.getElementById('trackingInput').value = badge.dataset.tracking; trackShipment(); });
         });
         
+        // Загрузка начальных данных
+        loadStuck();
+        loadWorkload();
         trackShipment();
     </script>
 </body>
