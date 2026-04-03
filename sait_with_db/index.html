@@ -5,469 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postal Track | Система отслеживания отправлений</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        /* Вкладки */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* Карточки */
-        .card {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 24px;
-            padding: 28px;
-            margin-bottom: 20px;
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-        }
-        .card h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #1e293b;
-            border-left: 4px solid #667eea;
-            padding-left: 12px;
-        }
-        
-        /* Формы */
-        .form-group { margin-bottom: 16px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #475569;
-            font-size: 13px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-family: inherit;
-        }
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #475569;
-        }
-        
-        /* Таблицы */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #475569;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .status-delivered { background: #22c55e; color: white; }
-        .status-transit { background: #f59e0b; color: white; }
-        .status-sorting { background: #8b5cf6; color: white; }
-        .status-registered { background: #64748b; color: white; }
-        
-        .loader { text-align: center; padding: 40px; color: #64748b; }
-        .error { color: #dc2626; background: #fef2f2; padding: 12px; border-radius: 12px; }
-        .success { color: #16a34a; background: #dcfce7; padding: 12px; border-radius: 12px; }
-        
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .stat-card {
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        @media (max-width: 768px) {
-            .card { padding: 20px; }
-            th, td { padding: 8px; font-size: 12px; }
-            .tabs { justify-content: center; }
-        }
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="container">
         <!-- Шапка -->
-        <div class="card" style="text-align: center; margin-bottom: 20px;">
-            <div class="logo" style="cursor: pointer;">
-                <span style="font-size: 28px;">✉</span>
-                <span style="font-size: 24px; font-weight: 700;">POSTAL TRACK</span>
+        <div class="card header-card">
+            <div class="logo">
+                <span class="logo-icon">✉</span>
+                <span class="logo-text">POSTAL TRACK</span>
             </div>
-            <p style="color: #64748b;">Система отслеживания почтовых отправлений</p>
+            <h1>Отслеживание отправлений</h1>
+            <p class="subtitle">Профессиональная система мониторинга почтовых отправлений</p>
         </div>
         
         <!-- Вкладки -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="track">📦 Отслеживание</button>
-            <button class="tab-btn" data-tab="stuck">⏰ Задержки (>2 дней)</button>
-            <button class="tab-btn" data-tab="workload">📊 Загруженность отделений</button>
-            <button class="tab-btn" data-tab="register">➕ Регистрация отправления</button>
-            <button class="tab-btn" data-tab="update">🔄 Обновление статуса</button>
-            <button class="tab-btn" data-tab="close">🚪 Закрытие отделения</button>
+            <button class="tab-btn" data-tab="stuck">⏰ Задержки</button>
+            <button class="tab-btn" data-tab="workload">📊 Загруженность</button>
+            <button class="tab-btn" data-tab="register">➕ Регистрация</button>
+            <button class="tab-btn" data-tab="update">🔄 Обновление</button>
+            <button class="tab-btn" data-tab="close">🚪 Закрытие</button>
         </div>
         
-        <!-- Вкладка 1: Отслеживание -->
-        <div id="tab-track" class="tab-content active">
-            <div class="card">
-                <h2>📍 Текущее местоположение отправления</h2>
-                <div class="grid-2">
-                    <div>
-                        <div class="form-group">
-                            <label>Трек-номер</label>
-                            <input type="text" id="trackingInput" placeholder="TRK001" value="TRK001">
-                        </div>
-                        <button class="btn" onclick="trackShipment()">Отследить</button>
-                    </div>
-                    <div id="trackResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;">
-                        <div class="loader">Введите трек-номер для отслеживания</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Контент вкладок -->
+        <div id="tab-track" class="tab-content active">${trackTabTemplate}</div>
+        <div id="tab-stuck" class="tab-content">${stuckTabTemplate}</div>
+        <div id="tab-workload" class="tab-content">${workloadTabTemplate}</div>
+        <div id="tab-register" class="tab-content">${registerTabTemplate}</div>
+        <div id="tab-update" class="tab-content">${updateTabTemplate}</div>
+        <div id="tab-close" class="tab-content">${closeTabTemplate}</div>
         
-        <!-- Вкладка 2: Задержки по статусам -->
-        <div id="tab-stuck" class="tab-content">
-            <div class="card">
-                <h2>⏰ Отправления, застрявшие на этапе "сортировка" более 2 дней</h2>
-                <div id="stuckResult"><div class="loader">Загрузка...</div></div>
+        <!-- Футер -->
+        <div class="footer">
+            <div>Все данные передаются по защищённому каналу</div>
+            <div class="footer-links">
+                <a href="#">О системе</a>
+                <a href="#">API документация</a>
+                <a href="#">Поддержка</a>
+                <a href="https://github.com/DAN1lll" target="_blank">GitHub</a>
             </div>
-        </div>
-        
-        <!-- Вкладка 3: Загруженность отделений -->
-        <div id="tab-workload" class="tab-content">
-            <div class="card">
-                <h2>📊 Загруженность отделений</h2>
-                <div id="workloadResult"><div class="loader">Загрузка...</div></div>
-            </div>
-        </div>
-        
-        <!-- Вкладка 4: Регистрация отправления -->
-        <div id="tab-register" class="tab-content">
-            <div class="card">
-                <h2>➕ Регистрация нового отправления</h2>
-                <div class="grid-2">
-                    <div>
-                        <div class="form-group"><label>Отправитель *</label><input type="text" id="regSender" placeholder="Иван Петров"></div>
-                        <div class="form-group"><label>Получатель *</label><input type="text" id="regRecipient"></div>
-                        <div class="form-group"><label>Адрес получателя *</label><input type="text" id="regAddress"></div>
-                        <div class="form-group"><label>Вес (кг)</label><input type="number" id="regWeight" value="1.0" step="0.1"></div>
-                        <div class="form-group">
-                            <label>Тип</label>
-                            <select id="regType"><option value="parcel">Посылка</option><option value="letter">Письмо</option><option value="package">Бандероль</option><option value="document">Документы</option><option value="express">Экспресс</option></select>
-                        </div>
-                        <div class="form-group"><label>Отделение</label><input type="text" id="regOffice" value="101000"></div>
-                        <button class="btn" onclick="registerShipment()">Зарегистрировать</button>
-                    </div>
-                    <div id="registerResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Вкладка 5: Обновление статуса -->
-        <div id="tab-update" class="tab-content">
-            <div class="card">
-                <h2>🔄 Обновление статуса отправления</h2>
-                <div class="grid-2">
-                    <div>
-                        <div class="form-group"><label>Трек-номер</label><input type="text" id="updateTracking" placeholder="TRK001"></div>
-                        <div class="form-group">
-                            <label>Статус</label>
-                            <select id="updateStatus">
-                                <option value="registered">Зарегистрировано</option>
-                                <option value="accepted">Принято</option>
-                                <option value="in_transit">В пути</option>
-                                <option value="sorting">На сортировке</option>
-                                <option value="arrived">Прибыло</option>
-                                <option value="out_for_delivery">Доставляется</option>
-                                <option value="delivered">Доставлено</option>
-                                <option value="failed_delivery">Неудачная доставка</option>
-                                <option value="returned">Возвращено</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Отделение</label><input type="text" id="updateOffice" value="101000"></div>
-                        <div class="form-group"><label>Комментарий</label><input type="text" id="updateNotes" placeholder="Необязательно"></div>
-                        <button class="btn" onclick="updateStatus()">Обновить статус</button>
-                    </div>
-                    <div id="updateResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Вкладка 6: Закрытие отделения -->
-        <div id="tab-close" class="tab-content">
-            <div class="card">
-                <h2>🚪 Закрытие отделения</h2>
-                <div class="grid-2">
-                    <div>
-                        <div class="form-group"><label>Индекс отделения</label><input type="text" id="closeOffice" placeholder="101000"></div>
-                        <button class="btn btn-secondary" onclick="closeOffice()">Закрыть отделение</button>
-                    </div>
-                    <div id="closeResult" style="background: #f8fafc; border-radius: 16px; padding: 16px;"></div>
-                </div>
-            </div>
+            <div>© 2026 Почтовая система | Версия 2.0 | Разработано с использованием Cloudflare Workers</div>
         </div>
     </div>
     
-    <script>
-        const API_URL = 'https://crimson-mountain-ad6e.block-cot.workers.dev';
-        
-        // Переключение вкладок
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
-                if (btn.dataset.tab === 'stuck') loadStuck();
-                if (btn.dataset.tab === 'workload') loadWorkload();
-            });
-        });
-        
-        // ========== 1. ОТСЛЕЖИВАНИЕ (текущее местоположение) ==========
-        async function trackShipment() {
-            const tracking = document.getElementById('trackingInput').value.trim().toUpperCase();
-            if (!tracking) { showResult('trackResult', 'Введите трек-номер', 'error'); return; }
-            
-            showResult('trackResult', 'Загрузка...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/postal/track/${tracking}`);
-                if (!resp.ok) throw new Error('Не найдено');
-                const data = await resp.json();
-                
-                const statusClass = getStatusClass(data.currentStatus?.status);
-                document.getElementById('trackResult').innerHTML = `
-                    <div><strong>📦 Трек-номер:</strong> ${data.shipment.tracking_number}</div>
-                    <div><strong>👤 Получатель:</strong> ${escapeHtml(data.shipment.recipient_name)}</div>
-                    <div><strong>📍 Текущее место:</strong> ${escapeHtml(data.currentStatus?.location_index || '—')}</div>
-                    <div><strong>📊 Статус:</strong> <span class="status-badge ${statusClass}">${getStatusName(data.currentStatus?.status)}</span></div>
-                    <div><strong>🕐 Последнее обновление:</strong> ${formatDate(data.currentStatus?.status_date)}</div>
-                    <hr style="margin: 12px 0">
-                    <details><summary>📜 История перемещений</summary>
-                        ${(data.history || []).map(h => `<div>• ${formatDate(h.status_date)} — ${getStatusName(h.status)} (${h.location_index})</div>`).join('')}
-                    </details>
-                `;
-            } catch(e) {
-                showResult('trackResult', 'Отправление не найдено', 'error');
-            }
-        }
-        
-        // ========== 2. ЗАДЕРЖКИ ПО СТАТУСАМ ==========
-        async function loadStuck() {
-            showResult('stuckResult', 'Загрузка...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/postal/stuck`);
-                const data = await resp.json();
-                if (!data.length) {
-                    document.getElementById('stuckResult').innerHTML = '<div class="success">✅ Нет отправлений, застрявших в сортировке более 2 дней</div>';
-                    return;
-                }
-                document.getElementById('stuckResult').innerHTML = `
-                    <table><thead><tr><th>Трек-номер</th><th>Получатель</th><th>Тип</th><th>Дней в сортировке</th></tr></thead><tbody>
-                    ${data.map(s => `<tr><td>${s.tracking_number}</td><td>${escapeHtml(s.recipient_name)}</td><td>${s.type}</td><td>${Math.round(s.days_stuck)}</td></tr>`).join('')}
-                    </tbody></table>
-                `;
-            } catch(e) { showResult('stuckResult', 'Ошибка загрузки', 'error'); }
-        }
-        
-        // ========== 3. ЗАГРУЖЕННОСТЬ ОТДЕЛЕНИЙ ==========
-        async function loadWorkload() {
-            showResult('workloadResult', 'Загрузка...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/postal/office-workload`);
-                const data = await resp.json();
-                document.getElementById('workloadResult').innerHTML = `
-                    <table><thead><tr><th>Индекс</th><th>Адрес</th><th>Телефон</th><th>Обработано</th><th>Активных</th></tr></thead><tbody>
-                    ${data.map(o => `<tr><td>${o.index_code}</td><td>${escapeHtml(o.address)}</td><td>${o.phone}</td><td>${o.total_shipments_handled || 0}</td><td>${o.active_shipments || 0}</td></tr>`).join('')}
-                    </tbody></table>
-                `;
-            } catch(e) { showResult('workloadResult', 'Ошибка загрузки', 'error'); }
-        }
-        
-        // ========== 4. РЕГИСТРАЦИЯ ОТПРАВЛЕНИЯ ==========
-        async function registerShipment() {
-            const data = {
-                recipient_name: document.getElementById('regRecipient').value,
-                recipient_address: document.getElementById('regAddress').value,
-                sender_name: document.getElementById('regSender').value,
-                weight_kg: parseFloat(document.getElementById('regWeight').value),
-                type: document.getElementById('regType').value,
-                location_index: document.getElementById('regOffice').value
-            };
-            if (!data.recipient_name || !data.recipient_address) {
-                showResult('registerResult', 'Заполните получателя и адрес', 'error');
-                return;
-            }
-            
-            showResult('registerResult', 'Регистрация...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/admin/shipment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await resp.json();
-                if (resp.ok) {
-                    showResult('registerResult', `✅ Отправление зарегистрировано! Трек-номер: ${result.tracking_number}`, 'success');
-                    document.getElementById('regRecipient').value = '';
-                    document.getElementById('regAddress').value = '';
-                } else {
-                    showResult('registerResult', `❌ Ошибка: ${result.error}`, 'error');
-                }
-            } catch(e) { showResult('registerResult', 'Ошибка соединения', 'error'); }
-        }
-        
-        // ========== 5. ОБНОВЛЕНИЕ СТАТУСА ==========
-        async function updateStatus() {
-            const data = {
-                tracking_number: document.getElementById('updateTracking').value.trim().toUpperCase(),
-                status: document.getElementById('updateStatus').value,
-                location_index: document.getElementById('updateOffice').value,
-                notes: document.getElementById('updateNotes').value
-            };
-            if (!data.tracking_number) {
-                showResult('updateResult', 'Введите трек-номер', 'error');
-                return;
-            }
-            
-            showResult('updateResult', 'Обновление...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/admin/status`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await resp.json();
-                if (resp.ok) {
-                    showResult('updateResult', `✅ Статус обновлён!`, 'success');
-                    document.getElementById('updateTracking').value = '';
-                    document.getElementById('updateNotes').value = '';
-                } else {
-                    showResult('updateResult', `❌ Ошибка: ${result.error}`, 'error');
-                }
-            } catch(e) { showResult('updateResult', 'Ошибка соединения', 'error'); }
-        }
-        
-        // ========== 6. ЗАКРЫТИЕ ОТДЕЛЕНИЯ ==========
-        async function closeOffice() {
-            const office = document.getElementById('closeOffice').value.trim();
-            if (!office) {
-                showResult('closeResult', 'Введите индекс отделения', 'error');
-                return;
-            }
-            
-            showResult('closeResult', 'Проверка...', 'loader');
-            try {
-                const resp = await fetch(`${API_URL}/api/admin/close-office`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ index_code: office })
-                });
-                const result = await resp.json();
-                showResult('closeResult', result.message || (resp.ok ? '✅ Отделение закрыто' : '❌ Ошибка'), result.success ? 'success' : 'error');
-            } catch(e) { showResult('closeResult', 'Ошибка соединения', 'error'); }
-        }
-        
-        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-        function showResult(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            if (type === 'loader') el.innerHTML = `<div class="loader">${message}</div>`;
-            else if (type === 'error') el.innerHTML = `<div class="error">❌ ${message}</div>`;
-            else if (type === 'success') el.innerHTML = `<div class="success">✅ ${message}</div>`;
-            else el.innerHTML = message;
-        }
-        
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-        
-        function formatDate(dateStr) {
-            if (!dateStr) return '—';
-            try { return new Date(dateStr).toLocaleString('ru-RU'); } catch { return dateStr; }
-        }
-        
-        function getStatusName(status) {
-            const map = { 'registered':'Зарегистрировано','accepted':'Принято','in_transit':'В пути','sorting':'На сортировке','arrived':'Прибыло','out_for_delivery':'Доставляется','delivered':'Доставлено','failed_delivery':'Неудачная доставка','returned':'Возвращено' };
-            return map[status] || status;
-        }
-        
-        function getStatusClass(status) {
-            const map = { 'delivered':'status-delivered','in_transit':'status-transit','out_for_delivery':'status-transit','sorting':'status-sorting','registered':'status-registered','arrived':'status-transit' };
-            return map[status] || 'status-registered';
-        }
-        
-        // Пасхалка
-        let clickCount = 0;
-        document.querySelector('.logo')?.addEventListener('click', () => {
-            clickCount++;
-            setTimeout(() => clickCount = 0, 1000);
-            if (clickCount === 3) {
-                const egg = document.createElement('div');
-                egg.innerHTML = 'by Назаров Даниил from ИСП224/1';
-                egg.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#1e293b; color:#a5b4fc; padding:8px 16px; border-radius:40px; font-size:12px; z-index:9999;';
-                document.body.appendChild(egg);
-                setTimeout(() => egg.remove(), 5000);
-                clickCount = 0;
-            }
-        });
-        
-        // Загрузка начальных данных
-        loadStuck();
-        loadWorkload();
-        trackShipment();
-    </script>
+    <script src="/config.js"></script>
+    <script src="/utils.js"></script>
+    <script src="/api.js"></script>
+    <script src="/ui.js"></script>
+    <script src="/tabs.js"></script>
+    <script src="/main.js"></script>
 </body>
 </html>
