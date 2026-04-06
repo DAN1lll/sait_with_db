@@ -16,6 +16,43 @@ const STATUS_MAP = {
     'returned': { name: 'Возвращено', class: 'status-registered' }
 };
 
+class RequestLock {
+    constructor() {
+        this.activeRequests = new Map();
+    }
+    
+    async execute(buttonId, requestFn, ...args) {
+        const button = document.getElementById(buttonId);
+        
+        if (this.activeRequests.get(buttonId)) {
+            this.showButtonFeedback(button, '⏳ Подождите...', true);
+            return null;
+        }
+        
+        this.activeRequests.set(buttonId, true);
+        const originalText = button?.textContent;
+        this.showButtonFeedback(button, '⏳ Отправка...', true);
+        
+        try {
+            const result = await requestFn(...args);
+            return result;
+        } finally {
+            this.activeRequests.delete(buttonId);
+            this.showButtonFeedback(button, originalText, false);
+        }
+    }
+    
+    showButtonFeedback(button, text, disabled) {
+        if (!button) return;
+        button.textContent = text;
+        button.disabled = disabled;
+        button.style.opacity = disabled ? '0.6' : '1';
+        button.style.cursor = disabled ? 'wait' : 'pointer';
+    }
+}
+
+const requestLock = new RequestLock();
+
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -98,6 +135,7 @@ function showSuccess(containerId, message) {
     if (el) el.innerHTML = `<div class="success">✅ ${escapeHtml(message)}</div>`;
 }
 
+
 async function loadTracking() {
     const tracking = document.getElementById('trackingInput')?.value.trim().toUpperCase();
     if (!tracking) { showError('trackResult', 'Введите трек-номер'); return; }
@@ -105,12 +143,12 @@ async function loadTracking() {
     showLoading('trackResult');
     try {
         const data = await trackShipment(tracking);
-        const statusInfo = getStatusClass(data.currentStatus?.status);
+        const statusClass = getStatusClass(data.currentStatus?.status);
         document.getElementById('trackResult').innerHTML = `
             <div><strong>📦 Трек-номер:</strong> ${escapeHtml(data.shipment.tracking_number)}</div>
             <div><strong>👤 Получатель:</strong> ${escapeHtml(data.shipment.recipient_name)}</div>
             <div><strong>📍 Место:</strong> ${escapeHtml(data.currentStatus?.location_index || '—')}</div>
-            <div><strong>📊 Статус:</strong> <span class="status-badge ${statusInfo}">${getStatusName(data.currentStatus?.status)}</span></div>
+            <div><strong>📊 Статус:</strong> <span class="status-badge ${statusClass}">${getStatusName(data.currentStatus?.status)}</span></div>
             <div><strong>🕐 Обновлено:</strong> ${formatDate(data.currentStatus?.status_date)}</div>
         `;
     } catch (e) {
@@ -128,7 +166,7 @@ async function loadStuck() {
         }
         document.getElementById('stuckResult').innerHTML = `
             <table><thead><tr><th>Трек-номер</th><th>Получатель</th><th>Тип</th><th>Дней</th></tr></thead><tbody>
-            ${data.map(s => `<tr><td>${escapeHtml(s.tracking_number)}</td><td>${escapeHtml(s.recipient_name)}</td><td>${s.type}</td><td>${Math.round(s.days_stuck)}</td></tr>`).join('')}
+            ${data.map(s => `<tr><td>${escapeHtml(s.tracking_number)}</td><td>${escapeHtml(s.recipient_name)}</td><td>${s.type}</td><td style="text-align:center">${Math.round(s.days_stuck)}</td></tr>`).join('')}
             </tbody></table>
         `;
     } catch (e) { showError('stuckResult', e.message); }
@@ -141,7 +179,7 @@ async function loadWorkload() {
         if (!data.length) { showError('workloadResult', 'Нет данных'); return; }
         document.getElementById('workloadResult').innerHTML = `
             <table><thead><tr><th>Индекс</th><th>Адрес</th><th>Телефон</th><th>Всего</th><th>Активных</th></tr></thead><tbody>
-            ${data.map(o => `<tr><td>${escapeHtml(o.index_code)}</td><td>${escapeHtml(o.address)}</td><td>${escapeHtml(o.phone)}</td><td style="text-align:center">${o.total_shipments || 0}</td><td style="text-align:center"><span class="status-badge ${(o.active_shipments || 0) > 0 ? 'status-transit' : 'status-delivered'}">${o.active_shipments || 0}</span></td></tr>`).join('')}
+            ${data.map(o => `<tr><td style="font-weight:600">${escapeHtml(o.index_code)}</td><td>${escapeHtml(o.address)}</td><td>${escapeHtml(o.phone)}</td><td style="text-align:center">${o.total_shipments || 0}</td><td style="text-align:center"><span class="status-badge ${(o.active_shipments || 0) > 0 ? 'status-transit' : 'status-delivered'}">${o.active_shipments || 0}</span></td></tr>`).join('')}
             </tbody></table>
         `;
     } catch (e) { showError('workloadResult', e.message); }
@@ -225,11 +263,27 @@ function initTabs() {
 }
 
 function initHandlers() {
-    document.getElementById('trackBtn')?.addEventListener('click', loadTracking);
-    document.getElementById('trackingInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadTracking(); });
-    document.getElementById('registerBtn')?.addEventListener('click', registerShipment);
-    document.getElementById('updateStatusBtn')?.addEventListener('click', updateShipmentStatus);
-    document.getElementById('closeOfficeBtn')?.addEventListener('click', closeOfficeAction);
+    document.getElementById('trackBtn')?.addEventListener('click', () => {
+        requestLock.execute('trackBtn', loadTracking);
+    });
+    
+    document.getElementById('trackingInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            requestLock.execute('trackBtn', loadTracking);
+        }
+    });
+    
+    document.getElementById('registerBtn')?.addEventListener('click', () => {
+        requestLock.execute('registerBtn', registerShipment);
+    });
+    
+    document.getElementById('updateStatusBtn')?.addEventListener('click', () => {
+        requestLock.execute('updateStatusBtn', updateShipmentStatus);
+    });
+    
+    document.getElementById('closeOfficeBtn')?.addEventListener('click', () => {
+        requestLock.execute('closeOfficeBtn', closeOfficeAction);
+    });
 }
 
 function initEasterEgg() {
