@@ -1,6 +1,6 @@
 
 const CONFIG = {
-    API_URL: 'https://crimson-mountain-ad6e.block-cot.workers.dev',
+    API_URL: 'https://crimson-mountain-ad6e.cloudkot.workers.dev',
     DEFAULT_TRACKING: 'TRK001'
 };
 
