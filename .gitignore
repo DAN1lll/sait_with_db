@@ -89,3 +89,7 @@ __tests__/
 *.cache
 .temp/
 .tmp/
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
