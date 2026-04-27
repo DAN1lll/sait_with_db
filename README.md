@@ -24,15 +24,3 @@
 | **API** | Cloudflare Workers | Серверная логика |
 | **Database** | Cloudflare D1 | Хранение данных |
 | **Deployment** | Cloudflare Pages | Хостинг фронтенда |
-
-## 📋 Функционал
-
-### Публичные эндпоинты
-- `GET /api/postal/track/:id` — Отслеживание посылки
-- `GET /api/postal/offices` — Список отделений
-- `GET /api/test` — Проверка API
-
-### Административные (с API ключом)
-- `POST /api/postal/shipment` — Создание посылки
-- `POST /api/postal/status` — Обновление статуса
-- `DELETE /api/postal/shipment/:id` — Удаление
